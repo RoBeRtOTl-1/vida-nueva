@@ -12,6 +12,7 @@ import Asidebar from "./components/Administrador/Asidebar";
 import Especialista from "./components/MEspecialista/Esp"
 import General from "./components/MGeneral/Principal"
 import Servicios from "./components/Recepcionista/Servicios/Servicios"
+import Especialidad from "./components/Recepcionista/Especialidad/Especialidades"
 //import Recepcionista from "./components/Recepcionista/ContPrincipal"
 
 
@@ -44,6 +45,7 @@ export default function App() {
                 <Route path="/Administrador" element={<Asidebar />} />
                 <Route path="/Recepcionista" element={<Recepcionista />} />
                 <Route path="/Recepcionista/Servicios" element={<Servicios />} />
+                <Route path="/Recepcionista/Especialidad" element={<Especialidad />} />
 
 
                 <Route path="*" element={<h1>404 Not Found</h1>} />

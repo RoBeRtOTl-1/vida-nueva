@@ -21,11 +21,11 @@ export default function Header() {
 
     return (
         <div className="col-sm-12">
-            <header className="navbar " style={{ backgroundColor: "#AECDF1", height: "80px" }}>
+            <header className="navbar" style={{ backgroundColor: "#AECDF1", height: "80px" }}>
                 <div className="container-fluid justify-content-end ">
-
-                    <div className="border rounded border-gray shadow-custom p-3 d-flex align-items-center" style={{ color: "#000000", justifyContent: "center", backgroundColor: "white", height:"45px" }}>{fechaHora}</div>
-
+                    <div className="border rounded border-gray shadow-custom p-3 d-flex align-items-center" style={{ color: "#000000", justifyContent: "center", backgroundColor: "white", height:"45px" }}>
+                        {fechaHora}
+                    </div>
                 </div>
             </header>
         </div >

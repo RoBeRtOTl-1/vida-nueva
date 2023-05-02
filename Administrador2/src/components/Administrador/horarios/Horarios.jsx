@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Agregar from "./Agregar";
 import Modificar from "./Modificar";
 import Estado from "../estados/Estados";
 import { DatosBD_Horarios } from "../../firebase/Horarios/HOR_CRUD";
 import { formatearHorario } from "../../firebase/Fechas/Fechas";
 import { DatoDeLaBD as DatoBD_USU } from "../../firebase/Ususarios/USU_CRUD";
+
+import { _, Grid } from 'gridjs-react';
 
 export default function Horarios() {
     const [datos, setDatos] = useState([]);
@@ -19,8 +20,15 @@ export default function Horarios() {
         const datosBD = await DatosBD_Horarios();
         setDatos(datosBD);
 
-        const usu = await DatoBD_USU()
-        setUsuarios(new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+
+        const usu = await DatoBD_USU();
+        const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO]));
+
+
+        setUsuarios(map)
+
+
+
 
         setIsLoading(false);
     }
@@ -46,16 +54,8 @@ export default function Horarios() {
                         <h3>Gestion de horarios</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar obtenerDatos={obtenerDatos} />
                     </div>
-                </div>
-                <div className="row mt-3">
-                    <div className="col-6"></div>
-                    <div className="col-6 d-flex align-items-center">
-                        <label htmlFor="buscar">Buscar:</label>
-                        <input type="text" id="buscar" className="ms-4 form-control" />
-                    </div>
-                </div>
+                </div> 
                 <div className="row mt-3">
                     <div className="col">
                         {isLoading ? (
@@ -65,39 +65,51 @@ export default function Horarios() {
                                 </div>
                             </div>
                         ) : (
-                            <table className="table align-middle">
-                                <thead>
-                                    <tr className="table-secondary text-center">
-                                        <th>Medico</th>
-                                        <th>Lunes</th>
-                                        <th>Martes</th>
-                                        <th>Miercoles</th>
-                                        <th>Jueves</th>
-                                        <th>Viernes</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody" className="text-center">
-                                    {datos.map((dato, index) => (
-                                        <tr key={index}>
-                                            <td className="text-start">{usuarios.get(dato.ID_USUARIO)}</td>
-                                            <td dangerouslySetInnerHTML={{ __html: formatearHorario(dato.LUNES) }}></td>
-                                            <td dangerouslySetInnerHTML={{ __html: formatearHorario(dato.MARTES) }}></td>
-                                            <td dangerouslySetInnerHTML={{ __html: formatearHorario(dato.MIERCOLES) }}></td>
-                                            <td dangerouslySetInnerHTML={{ __html: formatearHorario(dato.JUEVES) }}></td>
-                                            <td dangerouslySetInnerHTML={{ __html: formatearHorario(dato.VIERNES) }}></td>
-                                            <td className="">
-                                                <Modificar
-                                                    med_nombre={usuarios.get(dato.ID_USUARIO)}
-                                                    dato={dato}
-                                                    obtenerDatos={obtenerDatos}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
+                            <Grid
+                                data={datos.map(dato => [
+                                    usuarios.get(dato.ID_USUARIO),
+                                    dato.LUNES,
+                                    dato.MARTES,
+                                    dato.MIERCOLES,
+                                    dato.JUEVES,
+                                    dato.VIERNES,
+                                    _(<Modificar med_nombre={usuarios.get(dato.ID_USUARIO)} dato={dato} obtenerDatos={obtenerDatos} />)
+                                ])}
 
-                            </table>
+                                columns={[
+                                    'Medico',
+                                    'Lunes',
+                                    'Martes',
+                                    'Miercoles',
+                                    'Jueves',
+                                    'Viernes',
+                                    'Acciones'
+                                ]}
+                                search={true}
+
+                                pagination={{
+                                    limit: 5,
+                                }}
+
+                                className={{
+                                    table: 'table text-center ',
+                                    thead: 'bg-dark-subtle',
+                                    tbody: ' ',
+                                }}
+
+                                language={{
+                                    'search': {
+                                        'placeholder': 'Nombre del medico',
+
+                                    },
+                                    'pagination': {
+                                        'previous': 'Anterior',
+                                        'next': 'Siguiente',
+                                        'showing': 'Mostrando',
+                                        'results': () => 'Registros'
+                                    }
+                                }}
+                            />
                         )}
                     </div>
                 </div>
@@ -111,3 +123,4 @@ export default function Horarios() {
 
     );
 }
+//                 <td dangerouslySetInnerHTML={{ __html: formatearHorario(dato.LUNES) }}></td>

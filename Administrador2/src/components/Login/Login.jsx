@@ -1,35 +1,37 @@
 import { Button, InputAdornment, Stack, TextField, Typography } from "@mui/material"
-import React, { useEffect, useState } from "react"
+import React, { useContext,  useState } from "react"
 
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
 import IniciarSesion from "../firebase/autenticacion/AUTH_CRUD"
 import { useNavigate } from "react-router-dom"
 
 
+import { Toaster, toast } from "react-hot-toast"
+import { DataContext } from "../../context/UserContext"
+
+
 export default function Login() {
     const navigate = useNavigate()
+
     const [user, setUser] = useState({
         EMAIL: '',
         CLAVE: ''
     })
+
+    const { currenUser ,setCurrentUser} = useContext(DataContext)
+
     function handleUser(event) {
         setUser({ ...user, [event.target.name]: event.target.value })
     }
 
-
     async function validarCorreo() {
-        IniciarSesion(user)
-        // let re = new RegExp('^[a-z|A-Z|0-9|_]+@vn\.system\.com$')
-        // if (re.test(user.EMAIL)) {
-        //     MySwal.fire({
-        //         icon: 'error',
-        //         text: 'EMAIL O CONTRASEÑA INCORRECTOS',
-        //     })
-        // }
-        //console.log(re.test(user.EMAIL))
-        navigate("/Ventanas")
-        //<Navigate to="/Recepcionista" />
+        const login = await IniciarSesion(user.EMAIL, user.CLAVE)
+        if (login) { //Logueo correcto
+            setCurrentUser( login )
+            navigate("/Ventanas")
+        } else { //No se encontro al usuario
+            toast.error('USUARIO Y/0 \nCONTRASEÑA INCORRECTOS') 
+        }
+
     }
     return (
         <>
@@ -91,6 +93,10 @@ export default function Login() {
                         </div>
                     </div>
                 </div>
+                <Toaster
+                    position="top-right"
+                    reverseOrder={true}
+                />
             </div>
         </>
     )

@@ -32,9 +32,9 @@ export default function Turnos() {
   return (
     <div className="container-fluid p-0 overflow-hidden  " >
       <div className="row ">
-        <div className="col-md-4 bg-secondary pe-0 d-flex flex-column vh-100">
+        <div className="col-md-4 bg-light  pe-0 d-flex flex-column vh-100">
           {turnosEnCola.map((turno, index) => (
-            <Rectangle turno={turno} />
+            <Rectangle key={index} turno={turno} />
           ))}
         </div>
         <div className="col-md-8 p-0  d-flex flex-column">

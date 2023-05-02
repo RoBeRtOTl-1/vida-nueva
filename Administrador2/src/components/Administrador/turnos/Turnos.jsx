@@ -2,24 +2,21 @@ import React, { useEffect, useState } from "react";
 import Estado from "../estados/Estados";
 import { DatosBD_Turnos } from "../../firebase/Turnos/TURN_CRUD";
 import { ts_to_HM } from "../../firebase/Fechas/Fechas";
-
-
-function handleButtonClick(e, index) {
-    console.log(e + " " + index)
-}
-
+import { _, Grid } from 'gridjs-react';
 
 
 export default function Turnos() {
     const [turnos, setTurnos] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    
     async function obtenerDatos() {
+
         setTurnos([])
         const datosBD = await DatosBD_Turnos();
         //console.log(datosBD)
         setTurnos(datosBD);
         //setIsLoading(false);
+        setIsLoading(false)
     }
 
     useEffect(() => {
@@ -27,69 +24,84 @@ export default function Turnos() {
     }, []);
 
     return (
-    
-            <div className="rounded-4 pt-3 mt-5 border-gray shadow-custom" style={{ width: "1250px" }} >
 
-                <div className="container-fluid mt-4" >
+        <div className="rounded-4 pt-3 mt-5 border-gray shadow-custom" style={{ width: "1250px" }} >
 
-                    <div className="row">
-                        <div className="col-6">
-                            <h3>Turnos del dia</h3>
-                        </div>
-                        <div className="col-6 text-end">
-                            <button className="btn btn-primary">Agregar</button>
-                        </div>
+            <div className="container-fluid mt-4" >
+
+                <div className="row">
+                    <div className="col-6">
+                        <h3>Turnos del dia</h3>
                     </div>
-
-
-                    <div className="row mt-3">
-                        <div className="col-6">
-
-                        </div>
-                        <div className="col-6 d-flex align-items-center">
-                            <label htmlFor="buscar">Buscar:</label>
-                            <input type="text" id="buscar" className="ms-4 form-control" />
-                        </div>
+                    <div className="col-6 text-end">
+                        <button className="btn btn-primary">Agregar</button>
                     </div>
+                </div>
 
 
-                    <div className="row mt-3">
-                        <div className="col">
-                            <table className="table">
-                                <thead>
-                                    <tr className="table-secondary">
-                                        <th>Abreviatura</th>
-                                        <th>Tipo de servicio</th>
-                                        <th>Hora</th>
-                                        <th>Estatus</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="align-middle">
-                                    {turnos.map((tipo, index) => (
-                                        <tr key={index}>
-                                            <td>{tipo.ID_TURNO}</td>
-                                            <td>{tipo.ID_SERVICIO}</td>
-                                            <td> {ts_to_HM(tipo.FECHAHORA)}</td>
-                                            <td> <Estado  estado={tipo.ID_ESTADOS} /> </td>
-                                            <td className="d-flex align-items-center" >
-                                                
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
 
-                    <div className="row mt-3">
-                        <div className="col">
-                            <h4>Hola mundo</h4>
-                        </div>
+
+
+                <div className="row col-12 mt-4 d-flex justify-content-center">
+                    <div className="col-11">
+
+                        {isLoading ?
+                            (
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            ) : (
+
+                                <Grid
+                                    data={turnos.map(tipo => [
+                                        tipo.ID_TURNO,
+                                        tipo.ID_SERVICIO,
+                                        ts_to_HM(tipo.FECHAHORA),
+                                        _(<Estado estado={tipo.ID_ESTADOS} />)
+
+                                    ])}
+
+                                    columns={[
+                                        'Abreviatura',
+                                        'Tipo de servicio',
+                                        'Hora',
+                                        'Estatus',
+                                        'Acciones',
+                                    ]}
+                                    search={true}
+
+                                    pagination={{
+                                        limit: 5,
+                                    }}
+
+                                    className={{
+                                        table: 'table text-center ',
+                                        thead: 'bg-dark-subtle',
+                                        tbody: ' ',
+                                    }}
+
+                                    language={{
+                                        'search': {
+                                            'placeholder': 'Abreviatura',
+
+                                        },
+                                        'pagination': {
+                                            'previous': 'Anterior',
+                                            'next': 'Siguiente',
+                                            'showing': 'Mostrando',
+                                            'results': () => 'Registros'
+                                        }
+                                    }}
+                                />
+
+                            )}
                     </div>
                 </div>
             </div>
-        
-    
-    ) 
+        </div>
+
+
+    )
 };

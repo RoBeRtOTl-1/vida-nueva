@@ -1,27 +1,22 @@
-import { auth } from "../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import withReactContent from 'sweetalert2-react-content'
-import Swal from 'sweetalert2'
+import { tdu_Filtrado } from "../TiposDeUsuarios/TDU_CRUD";
+import { db, auth } from "../firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
-export default function IniciarSesion(user){
-    signInWithEmailAndPassword(auth, user.EMAIL, user.CLAVE)
-    .then((userCredential) => {
-      // Signed in
-      const user = userCredential.user;
-      const MySwal = withReactContent(Swal)
-      Swal.fire({
-        icon: 'success',
-        text: 'Logueo mamalon',
-      })
+export default async function IniciarSesion(EMAIL, CLAVE) {
 
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      const MySwal = withReactContent(Swal)
-      MySwal.fire({
-        icon: 'error',
-        text: 'EMAIL O CONTRASEÑA INCORRECTOS',
-    })
-    });
+    const especRef = collection(db, "USUARIOS");
+    const q = query(especRef, where("EMAIL", "==", EMAIL), where("CLAVE", "==", CLAVE));
+    const querySnapshot = await getDocs(q);
+    const datos = await Promise.all(querySnapshot.docs.map(async (doc) => {
+        let list_Data = {}
+        const permisos = await tdu_Filtrado(doc.data().ID_TDU);
+        Object.assign(list_Data, ...permisos, {"ID_USUARIO":doc.id});
+        return list_Data;
+    }));
+    return datos[0];
+
 }
+
+
+
+

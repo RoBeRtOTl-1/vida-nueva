@@ -4,6 +4,8 @@ import Modificar from "./Modificar";
 import { DatoDeLaBD } from "../../firebase/TiposDeUsuarios/TDU_CRUD";
 import Estado from "../estados/Estados";
 
+import { _, Grid } from 'gridjs-react';
+
 export default function TiposUsuario() {
     const [datos, setDatos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -14,12 +16,12 @@ export default function TiposUsuario() {
         setDatos(datosBD);
         setIsLoading(false);
     }
-    
+
     useEffect(() => {
         obtenerDatos();
     }, []);
-    
-    
+
+
     async function actualizarDatos() {
         const datosBD = await DatoDeLaBD();
         setDatos(datosBD);
@@ -39,15 +41,8 @@ export default function TiposUsuario() {
                         <Agregar obtenerDatos={obtenerDatos} />
                     </div>
                 </div>
-                <div className="row mt-3">
-                    <div className="col-6"></div>
-                    <div className="col-6 d-flex align-items-center">
-                        <label htmlFor="buscar">Buscar:</label>
-                        <input type="text" id="buscar" className="ms-4 form-control" />
-                    </div>
-                </div>
-                <div className="row mt-3">
-                    <div className="col">
+                <div className="row col-12 mt-4 d-flex justify-content-center ">
+                    <div className="col-11 ">
                         {isLoading ? (
                             <div class="d-flex justify-content-center">
                                 <div class="spinner-border" role="status">
@@ -55,43 +50,56 @@ export default function TiposUsuario() {
                                 </div>
                             </div>
                         ) : (
-                            <table className="table align-middle">
-                                <thead>
-                                    <tr className="table-secondary text-center">
-                                        <th>Tipos de usuarios</th>
-                                        <th>Administración</th>
-                                        <th>Recepción</th>
-                                        <th>Turnos</th>
-                                        <th>Médico gral</th>
-                                        <th>Especialista</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody" className="text-center">
-                                    {datos.map((dato, index) => (
-                                        <tr key={index}>
-                                            <td className="text-start">{dato.NOMBRE}</td>
-                                            <td>{dato.ADMINISTRACION ? "si" : "no"}</td>
-                                            <td>{dato.RECEPCION ? "si" : "no"}</td>
-                                            <td>{dato.TURNOS ? "si" : "no"}</td>
-                                            <td>{dato.MEDICOGENERAL ? "si" : "no"}</td>
-                                            <td>{dato.ESPECIALISTA ? "si" : "no"}</td>
-                                            <td>
-                                                <Estado estado={dato.ID_ESTADOS} />
-                                            </td>
-                                            <td className="">
-                                                <Modificar
-                                                    dato={dato}
-                                                    obtenerDatos={obtenerDatos}
-                                                />
 
-                                            </td>
+                            <Grid
+                                data={datos.map(dato => [
+                                    dato.NOMBRE,
+                                    dato.ADMINISTRACION ? "si" : "no",
+                                    dato.RECEPCION ? "si" : "no",
+                                    dato.TURNOS ? "si" : "no",
+                                    dato.MEDICOGENERAL ? "si" : "no",
+                                    dato.ESPECIALISTA ? "si" : "no",
+                                    _(<Estado estado={dato.ID_ESTADOS} />),
+                                    _(<Modificar dato={dato} obtenerDatos={obtenerDatos} />)
+                                ])}
 
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                columns={[
+                                    'Tipos de usuarios',
+                                        'Administración',
+                                        'Recepción',
+                                        'Turnos',
+                                        'Médico gral',
+                                        'Especialista',
+                                        'Estado',
+                                        'Acciones'
+                                ]}
+                                search={true}
+
+                                pagination={{
+                                    limit: 5,
+                                }}
+
+                                className={{
+                                    table: 'table text-center ',
+                                    thead: 'bg-dark-subtle',
+                                    tbody: ' ',
+                                }}
+
+                                language={{
+                                    'search': {
+                                        'placeholder': 'Tipo de usuario',
+
+                                    },
+                                    'pagination': {
+                                        'previous': 'Anterior',
+                                        'next': 'Siguiente',
+                                        'showing': 'Mostrando',
+                                        'results': () => 'Registros'
+                                    }
+                                }}
+                            />
+
+
                         )}
                     </div>
                 </div>

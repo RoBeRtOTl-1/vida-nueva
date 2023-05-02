@@ -1,19 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from "../Header";
 import AgregarCitaEspecialidad from "./AgregarCitaEspecialidad.jsx";
+import { DatoDeLaBDActivos } from '../../firebase/Especialides/ESP_CRUD';
 
 const Especialidades = () => {
 
-    const especialidades = [
-        {id:1,name:"Odontologia"},
-        {id:2,name:"Ultrasonidos"},
-        {id:3,name:"Psicologia"},
-        {id:4,name:"Audiometrias"},
-        {id:5,name:"Nutriologa"},
-        {id:6,name:"Electrocardiograma"},
-        {id:7,name:"Ginecologia"},
-        {id:8,name:"Control de enbarazo"}
-    ]
+
+    const [especialidades, setEspecialidades] =  useState([]);
+
+    async function obtenerDatos() {
+        setEspecialidades([])
+        const datosBD = await DatoDeLaBDActivos();
+        console.log(datosBD)
+        setEspecialidades(datosBD);
+
+        //setIsLoading(false);
+    }
+
+    useEffect(() => {
+        obtenerDatos();
+    }, []);
+    
 
 
     return (
@@ -29,8 +36,8 @@ const Especialidades = () => {
                     <div>
                        <div className="row justify-content-center mt-5 ">
                           {especialidades.map((especialidad) => (
-                              <div className="col-6">
-                                <AgregarCitaEspecialidad especialidad={especialidad.name} id={especialidad.id}/>
+                              <div className="col-3">
+                                <AgregarCitaEspecialidad especialidad={especialidad.ESPECIALIDAD} id={especialidad.ID}/>
                               </div>
                             ))}
                         </div>

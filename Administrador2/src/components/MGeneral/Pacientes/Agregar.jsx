@@ -14,34 +14,32 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Timestamp } from 'firebase/firestore';
 
+import { Toaster, toast } from "react-hot-toast"
+
 import { useState, useEffect } from 'react'
 import { Stack, TextField } from '@mui/material'
-import { insertarUSU } from '../../firebase/Ususarios/USU_CRUD.js';
-import { DatoDeLaBDActivos } from "../../firebase/Especialides/ESP_CRUD.js"
-import { tdu_Activos } from "../../firebase/TiposDeUsuarios/TDU_CRUD.js"
 import { insertarDom } from '../../firebase/Domicilio/Dom_CRUD.js';
 import { date_to_ts } from '../../firebase/Fechas/Fechas.js';
 import { insertarHorario } from '../../firebase/Horarios/HOR_CRUD.js';
+import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD.js';
+import { insertarPaciente } from '../../firebase/Pacientes/PAC_CRUD.js';
+
 
 
 export default function Agregar({ obtenerDatos }) {
     const [open, setOpen] = useState(false)
-
-    const [especialidad, setEspecialidad] = useState([]);
-    const [roles, setRoles] = useState([]);
-
+    const [tiposSangre, setTiposSangre] = useState(TIPOS_DE_SANGRE());
     const [datosPer, setDatosPer] = useState({
         NOMBRE: '',
         AP_MATERNO: '',
         AP_PATERNO: '',
-        ID_ESPECIALIDAD: '',
-        ID_SEXO: '',
+        ID_TIP_SANGRE:'',
         TELEFONO: '',
-        CEDULA: '',
+        CURP:'',
+        ID_SEXO: '',
         NACIMIENTO: '',
         EMAIL: '',
-        CLAVE: '',
-        ID_TDU: '',
+        ALEGIAS: '',
         ID_DOMICILIO: ''
     })
 
@@ -64,30 +62,24 @@ export default function Agregar({ obtenerDatos }) {
     }
 
     function handleDate(newValue) {
-        console.log(newValue)
         datosPer["NACIMIENTO"] = date_to_ts(newValue)
     }
 
     
     useEffect(() => {
-        obtenerEspecialidades()        
-        obtenerRoles()
+        
     }, []);
 
-    async function obtenerEspecialidades() {
-        setEspecialidad(await DatoDeLaBDActivos());
-    }
-
-    async function obtenerRoles() {
-        setRoles(await tdu_Activos());
-    }
-    async function insertarUSUyDOM() {
-
+     /**
+      * Este metodo insertara al domicilio y al usuario
+      * Primero inserta al domicilio, guarda su ID y se lo asigna al 
+      * objeto que tiene los datos del usuario, y por ultimo inserta los datos del usuario
+      */
+    async function insertarPACyDOM() {
         const ID_DOM = await insertarDom(datosDom);
         datosPer["ID_DOMICILIO"] = ID_DOM;
-        const ID_USU = await insertarUSU(datosPer)
-        await insertarHorario(ID_USU)
-        
+        const ID_USU = await insertarPaciente(datosPer) 
+        toast.success('Paciente guardado') 
     }
 
 
@@ -123,16 +115,16 @@ export default function Agregar({ obtenerDatos }) {
                                     <TextField label="Apellido paterno" name="AP_PATERNO" size="small" value={datosPer.AP_PATERNO} onChange={(e) => handleDatosPersonales(e)} />
                                     <TextField label="Apellido materno" name="AP_MATERNO" size="small" value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
 
-                                    <TextField size='small' name="ID_ESPECIALIDAD" label="Especialidad" select value={datosPer.ID_ESPECIALIDAD} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
-                                        {especialidad.map((dato, index) => (
-                                            <MenuItem key={index} value={dato.ID} >{dato.ESPECIALIDAD}</MenuItem>
+                                    <TextField size='small' name="ID_TIP_SANGRE" label="Tipo de sangre" select value={datosPer.ID_TIP_SANGRE} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
+                                        {tiposSangre.map((dato) => (
+                                            <MenuItem  value={dato.ID} >{dato.TIPO_SANGRE}</MenuItem>
                                         ))}
                                     </TextField>
-
                                 </Stack>
+
                                 <Stack direction="row" spacing={2}>
-                                    <TextField label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
-                                    <TextField label="CEDULA" name="CEDULA" size="small" value={datosPer.CEDULA} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField type="number" label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField label="CURP" name="CURP" size="small" value={datosPer.CURP} onChange={(e) => handleDatosPersonales(e)} />
 
                                     <TextField size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
                                         onChange={(e) => handleDatosPersonales(e)}>
@@ -147,32 +139,24 @@ export default function Agregar({ obtenerDatos }) {
 
                                 </Stack>
 
+                                <Stack direction="row" spacing={2}>
+                                    <TextField label="Email" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField label="Alergias" size="small" multiline name="ALERGIAS" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
+
+                                </Stack>
+
                                 <h5 style={{ color: "black" }}>Domicilio</h5>
                                 <hr />
                                 <Stack direction="row" spacing={2}>
                                     <TextField label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
                                     <TextField label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField type="number" label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
                                     <TextField label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
                                 </Stack>
 
                                 <Stack direction="row" spacing={2}>
-                                    <TextField label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                </Stack>
-
-                                <h5 style={{ color: "black" }}>Datos de cuenta</h5>
-                                <hr />
-                                <Stack direction="row" spacing={2}>
-                                    <TextField label="ejemplo@vn.system.com" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                    <TextField type='password' label="contraseña" size="small" name="CLAVE" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
-
-                                    <TextField size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}
-                                        onChange={(e) => handleDatosPersonales(e)}>
-                                        {roles.map((dato, index) => (
-                                            <MenuItem key={index} value={dato.ID} >{dato.NOMBRE}</MenuItem>
-                                        ))}
-                                    </TextField>
+                                    <TextField type="number" label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField type="number" label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
                                 </Stack>
 
                             </Stack>
@@ -183,12 +167,16 @@ export default function Agregar({ obtenerDatos }) {
                         <Button className='bg-success text-white' onClick={ async () => {
                             setOpen(false)
                             
-                            await insertarUSUyDOM()
+                            await insertarPACyDOM()
                             obtenerDatos()
                         }} >Guardar</Button>
 
                     </DialogActions>
                 </Dialog>
+                <Toaster
+                    position="top-right"
+                    reverseOrder={true}
+                />
             </div>
         )
     }

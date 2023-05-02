@@ -28,40 +28,48 @@ export async function insertarUSU(datos) {
     }
 }
 
+// export async function DatoDeLaBD() {
+//     const querySnapshot = await getDocs(collection(db, "USUARIOS"));
+//     const datos = [];
+//     querySnapshot.map(async (doc) => {
+//         let list_Data = doc.data()
+//         list_Data['ID'] = doc.id
+//         const domi = await DatoBD_Dom_Filtrado(doc.data().ID_DOMICILIO)
+//         Object.assign(list_Data, ...domi)
+//         datos.push(list_Data);
+
+//     });
+
+//     return datos;
+// }
+
 export async function DatoDeLaBD() {
     const querySnapshot = await getDocs(collection(db, "USUARIOS"));
-    const datos = [];
-    querySnapshot.forEach(async (doc) => {
-        let list_Data = doc.data()
-        list_Data['ID'] = doc.id
-        datos.push(list_Data);
-        const domi = await DatoBD_Dom_Filtrado(doc.data().ID_DOMICILIO)
-        Object.assign(list_Data, domi)
-
-        // Object.keys(domi[0]).forEach((nombre)=>{
-        //     list_Data[`${nombre}`] = domi[0][nombre]
-        // })
-    });
+    const datos = await Promise.all(querySnapshot.docs.map(async (doc) => {
+        let list_Data = doc.data();
+        list_Data['ID'] = doc.id;
+        const domi = await DatoBD_Dom_Filtrado(doc.data().ID_DOMICILIO);
+        Object.assign(list_Data, ...domi);
+        return list_Data;
+    }));
     return datos;
 }
 
-
-export async function DatoDeLaBDFiltrado(estado) {
-    const datos = [];
-
-    const querySnapshot = await getDocs(query(collection(db, "USUARIOS"), where("ID_ESPECIALIDAD", "==", estado)));
-    console.log(querySnapshot)
+export async function DatoDeLaBDFiltrado(ID_ESP) {
+    const datos = []; 
+    const q = query(collection(db, "USUARIOS"), where("ID_ESPECIALIDAD", "==", ID_ESP));
+    const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-        let list_Data = doc.data()
-        list_Data['ID'] = doc.id
-        datos.push(list_Data);
+      let list_Data = doc.data()
+      list_Data['ID'] = doc.id
+      datos.push(list_Data);
     });
     return datos;
-}
+  }
+  
 
 
 export async function actualizarUsuario(id, datos) {
-    console.log(id+" "+datos)
     // Add a new document in collection "cities"
     await setDoc(doc(db, "USUARIOS", id), {
         NOMBRE: datos.NOMBRE,

@@ -28,14 +28,14 @@ export default function Recepcionista() {
     return (
         <div>
             <Header />
-            <section className="align-items-center" style={{ height: "625px" }}>
+            <section className="align-items-center" style={{  marginTop: "13%" }}>
                 <div className="container">
                     <div className="row justify-content-center">
                         <div className="col-12 text-center">
                             <h2 style={{ color: "blue" }}>Bienvenido, seleccione su opción</h2>
                         </div>
                     </div>
-                    <div className="row justify-content-center my-3">
+                    <div className="row justify-content-center mt-5">
                         <div className="col-auto">
                             <Button className="btn btn-primary me-3 bg-light text-black text-start" style={{ border: "1px solid black" }} onClick={hanndleSer}>
                                 Servicios

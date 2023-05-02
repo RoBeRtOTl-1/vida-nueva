@@ -2,6 +2,7 @@ import { db } from "../firebase"
 import { collection, addDoc, getDocs, setDoc, doc, where, query } from "firebase/firestore";
 
 export async function insertarHorario(ID) {
+
     try {
         const domicilio = await addDoc(collection(db, 'HORARIOS'), {
             ID_USUARIO: ID,

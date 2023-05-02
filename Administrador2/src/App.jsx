@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { createContext, useState } from "react"
 import ReactDOM from "react-dom/client"
 import Recepcionista from "./components/Recepcionista/ContPrincipal";
 
@@ -15,42 +15,33 @@ import Servicios from "./components/Recepcionista/Servicios/Servicios"
 import Especialidad from "./components/Recepcionista/Especialidad/Especialidades"
 //import Recepcionista from "./components/Recepcionista/ContPrincipal"
 
-
 //import { io } from "socket.io-client"
 //const socket = io('http://localhost:4000')
 
+import { DataProvider } from "./context/UserContext";
+import { CountProvider } from "./context/CountContext";
+
 export default function App() {
-    const [user, setUser] = useState(false)
-
-    const login = () => {
-        setUser(true)
-    }
-
-    const logout = () => {
-        setUser(null)
-    }
-
-
-
     return (
-        <>
-            <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/Login" element={<Login />} />
-                <Route path="/Ventanas" element={<UserCurrRol />} />
-                <Route path="/Condicional" element={<Condicional />} />
-                <Route path="/Turnos" element={<Turnos />} />
-                <Route path="/Especialista" element={<Especialista />} />
-                <Route path="/General" element={<General />} />
-                <Route path="/Administrador" element={<Asidebar />} />
-                <Route path="/Recepcionista" element={<Recepcionista />} />
-                <Route path="/Recepcionista/Servicios" element={<Servicios />} />
-                <Route path="/Recepcionista/Especialidad" element={<Especialidad />} />
+        <DataProvider>
+            <CountProvider>
 
-
-                <Route path="*" element={<h1>404 Not Found</h1>} />
-            </Routes>
-        </>
+                <Routes>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/Login" element={<Login />} />
+                    <Route path="/Ventanas" element={<UserCurrRol />} />
+                    <Route path="/Condicional" element={<Condicional />} />
+                    <Route path="/Turnos" element={<Turnos />} />
+                    <Route path="/Especialista" element={<Especialista />} />
+                    <Route path="/General" element={<General />} />
+                    <Route path="/Administrador" element={<Asidebar />} />
+                    <Route path="/Recepcionista" element={<Recepcionista />} />
+                    <Route path="/Recepcionista/Servicios" element={<Servicios />} />
+                    <Route path="/Recepcionista/Especialidad" element={<Especialidad />} />
+                    <Route path="*" element={<h1>404 Not Found</h1>} />
+                </Routes>
+            </CountProvider>
+        </DataProvider>
 
     )
 }

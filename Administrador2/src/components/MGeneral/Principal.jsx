@@ -1,73 +1,46 @@
-import { Button } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+
+import SigTurno from "./Principal/SigTurno"
+import Pacientes from "./Pacientes/Pacientes";
 
 export default function General() {
-    const socket = io("http://localhost:4000"); // Cambiar la URL por la del servidor Socket.io
-    const [turno, setTurno] = useState('')
     const [fechaHora, setFechaHora] = useState('');
-    useEffect(() => {
-        socket.on("setNextTurno", (nuevturno) => {
-            setTurno("");
-            setTurno(nuevturno);
-        });
-
-        function mostrarFechaHora() {
-            const fecha = new Date();
-            const dia = fecha.getDate();
-            const mes = fecha.toLocaleString('default', { month: 'long' });
-            const anio = fecha.getFullYear();
-
-            let fechaHoraFormateada = `${dia} de ${mes} ${anio}`;
-
-            setFechaHora(fechaHoraFormateada);
-        }
-        const intervalId = setInterval(mostrarFechaHora, 1000);
-        return () => clearInterval(intervalId);
-    }, []);
 
     const [title, setTitle] = useState("Principal")
-    const [image, setImage] = useState()
+    const [image, setImage] = useState('src/css/img/asidebar/Principal.png')
+    
+    const [contenido, setContenido] = useState(<SigTurno />)
+
+    useEffect(() => {
+        const intervalId = setInterval(() => mostrarFechaHora(), 1000);
+        return () => clearInterval(intervalId);
+      }, []);
+      
+      function mostrarFechaHora() {
+        const fecha = new Date();
+        const dia = fecha.getDate();
+        const mes = fecha.toLocaleString('default', { month: 'long' });
+        const anio = fecha.getFullYear();
+        let fechaHoraFormateada = `${dia} de ${mes} ${anio}`;
+        setFechaHora(fechaHoraFormateada);
+      }
+      
 
     function handleTitle(newTitle, newImg) {
         setTitle(newTitle)
         setImage(newImg)
     }
 
-    const avanzarTurno = () => {
-        socket.emit("avanzarTurno"); // Enviar evento al servidor para avanzar el turno
-
-    };
-
-    const [contenido, setContenido] = useState('')
 
     function handleContenido(newContenido) {
         switch (newContenido) {
             case "Principal":
-                //setContenido(<Principal />)
+                setContenido(<SigTurno />)
                 break;
-            case "Usuarios":
-                //setContenido(<Usuarios />)
+            case "Pacientes":
+                setContenido(<Pacientes />)
                 break;
-            case "Tipos de usuarios":
-                //setContenido(<TiposUsuario />)
-                break;
-            case "Publicidad":
-                //setContenido(<Publicidad />)
-                break;
-            case "Turnos":
-                //setContenido(<Turnos />)
-                break;
-            case "Horarios":
-                //setContenido(<Horarios />)
-                break;
-            case "Especialidades":
-                //setContenido(<Especialidades />)
-                break;
-
-            case "Citas":
-                //setContenido(<Citas />)
-                break;
+            
 
         }
     }
@@ -88,7 +61,7 @@ export default function General() {
                         <ul className="nav-links">
                             <li>
                                 <a href="#" onClick={() => {
-                                    handleTitle("Principal");
+                                    handleTitle("Principal", "src/css/img/asidebar/Principal.png");
                                     handleContenido("Principal");
                                 }}  >
                                     <img src="src/css/img/asidebar/Principal.png" width={'35px'} />
@@ -98,17 +71,13 @@ export default function General() {
 
                             <li>
                                 <a href="#" onClick={() => {
-                                    handleTitle("Expedientes", "src/css/img/asidebar/Usuarios.png");
-                                    handleContenido("Usuarios");
+                                    handleTitle("Pacientes", "src/css/img/Medico/Paciente.png");
+                                    handleContenido("Pacientes");
                                 }}>
-                                    <img src="src/css/img/asidebar/Usuarios.png" width={'35px'} />
-                                    <span className="link_name">Expedientes</span>
+                                    <img src="src/css/img/Medico/Paciente.png" width={'35px'} />
+                                    <span className="link_name">Pacientes</span>
                                 </a>
                             </li>
-
-                            
-                            
-
                         </ul>
                     </div>
 
@@ -129,10 +98,8 @@ export default function General() {
                         </div>
 
                         <div className="col-sm-12 " >
-                            <Button onClick={avanzarTurno}>Avanzar turno</Button>
-                            <p>Turno llamado: {turno}</p>
+                            {contenido}
                         </div>
-
                     </div>
 
                 </div>
@@ -141,3 +108,4 @@ export default function General() {
         </div>
     )
 }
+

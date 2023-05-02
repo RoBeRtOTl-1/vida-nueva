@@ -4,6 +4,8 @@ import Estado from "../estados/Estados";
 import Agregar from "./Agregar";
 import Modificar from "./Modificar";
 
+import { _, Grid } from 'gridjs-react';
+
 export default function Especialidades() {
     const [datos, setDatos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -39,16 +41,10 @@ export default function Especialidades() {
                         <Agregar obtenerDatos={obtenerDatos} />
                     </div>
                 </div>
-                <div className="row mt-3">
-                    <div className="col-6"></div>
-                    <div className="col-6 d-flex align-items-center">
-                        <label htmlFor="buscar">Buscar:</label>
-                        <input type="text" id="buscar" className="ms-4 form-control" />
-                    </div>
-                </div>
+         
 
                 <div className="row col-12 mt-4 d-flex justify-content-center">
-                    <div className="col-6 ">
+                    <div className="col-11 ">
                         {isLoading ? (
                             <div class="d-flex justify-content-center">
                                 <div class="spinner-border" role="status">
@@ -56,27 +52,42 @@ export default function Especialidades() {
                                 </div>
                             </div>
                         ) : (
-                            <table className="table align-middle ">
-                                <thead>
-                                    <tr className="table-secondary text-center ">
-                                        <th>Nombre</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody" className="text-center">
-                                    {datos.map((dato, index) => (
-                                        <tr key={index}>
-                                            <td className="text-start">{dato.ESPECIALIDAD}</td>
-                                            <td> <Estado estado={dato.ID_ESTADOS} /> </td>
-                                            <td className="">
-                                                <Modificar dato={dato} 
-                                                    obtenerDatos={obtenerDatos}/>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <Grid
+                                data={datos.map( dato => [
+                                    dato.ESPECIALIDAD, _(<Estado estado={dato.ID_ESTADOS} />), _(<Modificar dato={dato} obtenerDatos={obtenerDatos}/>)
+                                ])}
+                              
+                                columns={[
+                                    'NOMBRE',
+                                    'ESTADO',
+                                    'ACCIONES'
+                                ]}
+                                search={true}
+
+                                pagination={{
+                                    limit: 5,
+                                }}
+
+                                className={{
+                                    table: 'table text-center ',
+                                    thead: 'bg-dark-subtle',
+                                    tbody: ' ',
+                                }}
+
+                                language={{
+                                    'search': {
+                                        'placeholder': 'Especialidad',
+
+                                    },
+                                    'pagination': {
+                                        'previous': 'Anterior',
+                                        'next': 'Siguiente',
+                                        'showing': 'Mostrando',
+                                        'results': () => 'Registros'
+                                    }
+                                }}
+                            />
+
                         )}
                     </div>
                 </div>

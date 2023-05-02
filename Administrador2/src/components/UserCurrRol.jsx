@@ -1,76 +1,86 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-//Tiene condigo abajo comentado
+import { DataContext } from "../context/UserContext";
+
+//import { DataProvider } from "../context/UserContext";
 
 export default function UserCurrRol(){
 
+    const { currenUser }  = useContext(DataContext) //Ojo poner el DataContext cuando lo deseamos consumir
+    
     return (
         <div className="d-flex align-items-center vh-100" >
             <div  className=" container text-center">
                 <div style={{ height: "130px" }} className="row d-flex justify-content-between">
-                    <Link className="pt-3" style={{ width: "200px", backgroundColor: "#FFAEAE" }} to="/Administrador">
-                        <p>Administrador</p>
-                        <img src="src/css/img/Roles/Administrador.png" style={{ width: "40px" }} alt="" />
-                    </Link>
-
-                    <Link className="pt-3" style={{ width: "200px", backgroundColor: "#A8D3F9" }} to="/General">
-                        <p>Medico general</p>
-                        <img src="src/css/img/Roles/Medico.png" style={{ width: "40px" }} alt="" />
-                    </Link>
-                    <Link className="pt-3" style={{ width: "200px", backgroundColor: "#A8D3F9" }} to="/Especialista">
-                        <p>Medico especialista</p>
-                        <img src="src/css/img/Roles/Medico.png" style={{ width: "40px" }} alt="" />
-                    </Link>
-                    <Link className="pt-3" style={{ width: "200px", backgroundColor: "#92EAA6" }} to="/Recepcionista">
-                        <p>Recepcionista</p>
-                        <img src="src/css/img/Roles/Recepcionista.png" style={{ width: "40px" }} alt="" />
-                    </Link>
-                    <Link className="pt-3" style={{ width: "200px", backgroundColor: "#D6F5FF" }} to="/Turnos">
-                        <p>Turnos</p>
-                        <img src="src/css/img/Roles/Turnos.png" style={{ width: "40px" }} alt="" />
-                    </Link>
+                    
+                    {
+                     currenUser.ADMINISTRACION ? 
+                            (<EtLink
+                            nombre="Administrador"
+                            rutImg="src/css/img/Roles/Administrador.png"
+                            bgColor="FFAEAE"
+                            toPath="/Administrador"/>) 
+                        : 
+                            (null)   
+                    }
+                    
+                    {
+                     currenUser.ESPECIALISTA ? 
+                            (<EtLink 
+                                nombre="Medico especialista"
+                                rutImg="src/css/img/Roles/Medico.png"
+                                bgColor="A8D3F9"
+                                toPath="/Especialista"/>) 
+                        : 
+                            (null)   
+                    }
+                    
+                    {
+                     currenUser.MEDICOGENERAL ? 
+                            (<EtLink 
+                                nombre="Medico general"
+                                rutImg="src/css/img/Roles/Medico.png"
+                                bgColor="A8D3F9"
+                                toPath="/General"/>) 
+                        : 
+                            (null)   
+                    }
+                    
+                    
+                    {
+                     currenUser.RECEPCION ? 
+                            (<EtLink 
+                                nombre="Recepcionista"
+                                rutImg="src/css/img/Roles/Recepcionista.png"
+                                bgColor="92EAA6"
+                                toPath="/Recepcionista"
+                                />) 
+                        : 
+                            (null)   
+                    }
+                    
+                    {
+                     currenUser.TURNOS ? 
+                            (<EtLink 
+                                nombre="Turnos"
+                                rutImg="src/css/img/Roles/Turnos.png"
+                                bgColor="D6F5FF"
+                                toPath="/Turnos"
+                                />) 
+                        : 
+                            (null)   
+                    }
                 </div>
             </div>
-        </div>
+        </div> 
     )
 }
 
-
-// function Navigation() {
-//     return (
-//         <div className=" container text-center">
-//             <div style={{ height: "130px" }} className="row d-flex justify-content-between">
-               
-
-//                 <Link className="pt-3" style={{ width: "200px", backgroundColor: "#FFAEAE" }} to="/Administrador">
-//                     <p>Administrador</p>
-//                     <img src="src/css/img/Roles/Administrador.png" style={{ width: "40px" }} alt="" />
-//                 </Link>
-
-//                 <Link className="pt-3" style={{ width: "200px", backgroundColor: "#A8D3F9" }} to="/General">
-//                     <p>Medico general</p>
-//                     <img src="src/css/img/Roles/Medico.png" style={{ width: "40px" }} alt="" />
-//                 </Link>
-//                 <Link className="pt-3" style={{ width: "200px", backgroundColor: "#A8D3F9" }} to="/Especialista">
-//                     <p>Medico especialista</p>
-//                     <img src="src/css/img/Roles/Medico.png" style={{ width: "40px" }} alt="" />
-//                 </Link>
-//                 <Link className="pt-3" style={{ width: "200px", backgroundColor: "#92EAA6" }} to="/Recepcionista">
-//                     <p>Recepcionista</p>
-//                     <img src="src/css/img/Roles/Recepcionista.png" style={{ width: "40px" }} alt="" />
-//                 </Link>
-//                 <Link className="pt-3" style={{ width: "200px", backgroundColor: "#D6F5FF" }} to="/Turnos">
-//                     <p>Turnos</p>
-//                     <img src="src/css/img/Roles/Turnos.png" style={{ width: "40px" }} alt="" />
-//                 </Link>
-//             </div>
-//         </div>
-
-//     )
-
-
-
-// <Link className="pt-3" style={{ width: "200px", backgroundColor: "#FFAEAE" }} to="/Login">
-// <img src="src/css/img/Roles/Medico.png" style={{ width: "40px" }} alt="" />
-// </Link>
-
+function EtLink({nombre, rutImg, bgColor, toPath}){
+    return(
+        <Link className="pt-3" style={{ width: "200px", backgroundColor: `#${bgColor}` }} to={toPath}>
+                        <p>{nombre}</p>
+                        <img src={rutImg} style={{ width: "40px" }} alt="" />
+                    </Link>
+    )
+}

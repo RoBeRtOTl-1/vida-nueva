@@ -1,31 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { DatoDeLaBD } from "../../firebase/Ususarios/USU_CRUD";
-import { DatoDeLaBD as DatoBD_TDU } from "../../firebase/TiposDeUsuarios/TDU_CRUD";
+import React, { useState, useEffect, useContext } from "react";
 import Agregar from "./Agregar";
-import Modificar from "./Modificar";
-import Estado from "../estados/Estados";
 
 import { _, Grid } from 'gridjs-react';
+import { get_Pacientes_BD } from "../../firebase/Pacientes/PAC_CRUD";
 
-export default function Usuarios() {
+import ConsultaMedica from "./ConsultaMedica";
+import { DataContext } from "../../../context/UserContext.jsx"
+import VerConsultas from "./VerConsultas";
+
+
+export default function Pacientes() {
     const [usuarios, setUsuarios] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [tipUsu, setTipUsu] = useState(new Map())
+    const { currenUser } = useContext(DataContext)
 
-
-    async function obtenerDatos() { 
+    async function obtenerDatos() {
         setUsuarios([]);
-        setTipUsu(new Map());        
 
-        const datosBD = await DatoDeLaBD();
+        const datosBD = await get_Pacientes_BD();
         setUsuarios(datosBD);
 
-        const tU = await DatoBD_TDU();
-        const map =  new Map(tU.map(dato => [dato.ID, dato.NOMBRE]));
-        setTipUsu(map);    
+
         setIsLoading(false);
     }
-    
+
 
     useEffect(() => {
         obtenerDatos();
@@ -37,7 +35,7 @@ export default function Usuarios() {
             <div className="container-fluid mt-4" >
                 <div className="row">
                     <div className="col-6">
-                        <h3>Usuarios</h3>
+                        <h3>Pacientes</h3>
                     </div>
                     <div className="col-6 text-end">
                         <Agregar obtenerDatos={obtenerDatos} />
@@ -49,32 +47,39 @@ export default function Usuarios() {
                 <div className="row col-12 mt-4 d-flex justify-content-center">
                     <div className="col-12">
                         {isLoading ? (
-                            <div class="d-flex justify-content-center">
-                                <div class="spinner-border" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                            <div className="d-flex justify-content-center">
+                                <div className="spinner-border" role="status">
+                                    <span className="visually-hidden">Loading...</span>
                                 </div>
                             </div>
                         ) : (
 
                             <Grid
-                                data={usuarios.map( dato => [
-                                    dato.NOMBRE + " "+ dato.AP_PATERNO+" "+ dato.AP_MATERNO, 
-                                    tipUsu.get(dato.ID_TDU),
-                                    dato.EMAIL,
+                                data={usuarios.map(dato => [
+                                    dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO,
+                                    dato.CURP,
                                     dato.TELEFONO,
-                                    _(<Estado estado={dato.ID_ESTADOS} />), 
-                                    _(<Modificar dato={dato} obtenerDatos={obtenerDatos}/>)
+                                    _(<ConsultaMedica ID_PACIENTE={dato.ID} ID_USUARIO={currenUser.ID_USUARIO} obtenerDatos={obtenerDatos} />),
+                                    _(<VerConsultas ID_PACIENTE={dato.ID} ID_USUARIO={currenUser.ID_USUARIO} obtenerDatos={obtenerDatos} />)
                                 ])}
-                              
+
                                 columns={[
                                     'Nombre completo',
-                                    'Tipo de usuario',
+                                    'CURP',
                                     'Email',
-                                    'Telefono',
-                                    'Estado',
-                                    'Acciones',
+                                    {
+                                        name: 'Acciones',
+                                        columns: [{
+                                            name: 'Registrar consulta'
+                                        }, {
+                                            name: 'Ver consultas'
+                                        }]
+                                    }
+                                    
                                 ]}
-                                search={true}
+                                search={{
+                                    fields: ['CURP']
+                                }}
 
                                 pagination={{
                                     limit: 5,
@@ -88,7 +93,7 @@ export default function Usuarios() {
 
                                 language={{
                                     'search': {
-                                        'placeholder': 'Nombre del medico',
+                                        'placeholder': 'CURP',
 
                                     },
                                     'pagination': {
@@ -100,11 +105,11 @@ export default function Usuarios() {
                                 }}
                             />
 
-                           
+
                         )}
                     </div>
                 </div>
-                
+
             </div>
         </div>
 

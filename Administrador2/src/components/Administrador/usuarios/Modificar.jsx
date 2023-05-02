@@ -25,8 +25,8 @@ import { date_to_ts, ts_to_date } from '../../firebase/Fechas/Fechas.js';
 
 
 export default function Modificar({ dato, obtenerDatos }) {
-    const [open, setOpen] = useState(false)
 
+    const [open, setOpen] = useState(false)
     const [especialidad, setEspecialidad] = useState([]);
     const [roles, setRoles] = useState([]);
 
@@ -47,14 +47,15 @@ export default function Modificar({ dato, obtenerDatos }) {
     })
 
     const [datosDom, setDatosDom] = useState({
-        CIUDAD: dato[0].CIUDAD,
-        COLONIA: dato[0].COLONIA,
-        COD_POSTAL: dato[0].COD_POSTAL,
-        CALLE: dato[0].CALLE,
-        NUM_INTERIOR: dato[0].NUM_INTERIOR,
-        NUM_EXTERIOR: dato[0].NUM_EXTERIOR
+        CIUDAD: dato.CIUDAD,
+        COLONIA: dato.COLONIA,
+        COD_POSTAL: dato.COD_POSTAL,
+        CALLE: dato.CALLE,
+        NUM_INTERIOR: dato.NUM_INTERIOR,
+        NUM_EXTERIOR: dato.NUM_EXTERIOR
     })
-
+    
+    //usar ...
 
     function handleDatosPersonales(event) {
         setDatosPer({ ...datosPer, [event.target.name]: event.target.value })
@@ -72,6 +73,8 @@ export default function Modificar({ dato, obtenerDatos }) {
     useEffect(() => {
         obtenerEspecialidades()
         obtenerRoles()
+        console.log(datosPer)
+        
     }, []);
 
     async function obtenerEspecialidades() {
@@ -83,7 +86,7 @@ export default function Modificar({ dato, obtenerDatos }) {
     }
 
     async function insertarUSUyDOM() {
-        await actualizarDom(dato.ID_DOMICILIO,datosDom);
+        await actualizarDom(dato.ID_DOMICILIO, datosDom);
         await actualizarUsuario(dato.ID, datosPer)
     }
 
@@ -165,7 +168,7 @@ export default function Modificar({ dato, obtenerDatos }) {
                             <hr />
                             <Stack direction="row" spacing={2}>
                                 <TextField label="ejemplo@vn.system.com" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="constraseña" size="small" name="CLAVE" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
+                                <TextField type='password' label="contraseña" size="small" name="CLAVE" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
 
                                 <TextField size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}
                                     onChange={(e) => handleDatosPersonales(e)}>
@@ -173,7 +176,7 @@ export default function Modificar({ dato, obtenerDatos }) {
                                         <MenuItem key={index} value={dato.ID} >{dato.NOMBRE}</MenuItem>
                                     ))}
                                 </TextField>
-                                
+
                                 <TextField size='small' label="ESTADO" name="ID_ESTADOS" select fullWidth value={datosPer.ID_ESTADOS} style={{ width: '30%' }}
                                     onChange={(e) => handleDatosPersonales(e)}>
                                     <MenuItem value="1">Activo</MenuItem>
@@ -189,8 +192,7 @@ export default function Modificar({ dato, obtenerDatos }) {
                     <Button className='bg-success text-white' onClick={async () => {
                         setOpen(false)
                         await insertarUSUyDOM()
-
-                        obtenerDatos()
+                        await obtenerDatos()
                     }} >Guardar</Button>
 
                 </DialogActions>

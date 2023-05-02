@@ -12,7 +12,6 @@ export async function insertarDom(datos) {
             NUM_EXTERIOR: datos.NUM_EXTERIOR,
             NUM_INTERIOR: datos.NUM_INTERIOR
         });
-        alert("NUEVA DOMICILIO INSERTADADO")
         return domicilio.id
     } catch (error) {
         alert("OCURRIO UN ERROR - INSERTAR:"
@@ -40,7 +39,7 @@ export async function DatoBD_Dom_Filtrado(ID_DOMICILIO) {
     querySnapshot.forEach((doc) => {
         if (doc.id == ID_DOMICILIO) {
             let list_Data = doc.data()
-            list_Data['ID'] = doc.id
+            list_Data['ID_DOMICILIO'] = doc.id
             datos.push(list_Data);
         }
     });
@@ -49,7 +48,6 @@ export async function DatoBD_Dom_Filtrado(ID_DOMICILIO) {
 
 
 export async function actualizarDom(id, datos) {
-    console.log(id+" "+datos.CALLE)
     // Add a new document in collection "cities"    
     await setDoc(doc(db, "DOMICILIOS", id), {
         CALLE: datos.CALLE,

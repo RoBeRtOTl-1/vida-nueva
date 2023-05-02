@@ -78,6 +78,7 @@ export default function Modificar({dato,obtenerDatos}) {
                                     <MenuItem value="2">Inactivo</MenuItem>
                                 </TextField>
                             </div>
+                            
                         </div>
                     </DialogContentText>
                 </DialogContent>

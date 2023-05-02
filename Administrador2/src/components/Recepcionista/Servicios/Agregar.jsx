@@ -8,10 +8,11 @@ import {
     MenuItem,
     Box
 } from '@mui/material'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { getCurrentDate } from '../../firebase/Fechas/Fechas'
-import { datosNuevoTurno, insertarTurno } from '../../firebase/Turnos/TURN_CRUD';
+import { actualizarContadores, datosNuevoTurno, insertarTurno } from '../../firebase/Turnos/TURN_CRUD';
 import { io } from 'socket.io-client';
+import { CountContext } from '../../../context/CountContext';
 
 
 
@@ -22,19 +23,31 @@ export default function Agregar({ servicio, id }) {
     const [datosTurno, setDatosTurno] = useState({})
     const socket = io("http://localhost:4000");
     const [isLoading, setIsLoading] = useState(false);
+    
+    const { countServ, setCountServ } = useContext( CountContext )
 
     useEffect(() => { }, []);
 
     async function insTur() {
         setIsLoading(true);
         setOpen(false) //Se oculta el primer modal
-        const idTurno = await insertarTurno(id);
-        const dataTurno = await datosNuevoTurno(idTurno);
+
+        //Actualizamos el valor del contexto que almacena nuestros contadores
+        setCountServ({...countServ, [id]:(countServ[id] + 1) }) 
+
+        //Actualizamos el contador en firebase
+        await actualizarContadores( countServ )
+
+        const idTurno = await insertarTurno(id, countServ[id]);  //Inserta un nuevo turno
+
+        const dataTurno = await datosNuevoTurno(idTurno); //Obtiene los datos del turno insertado
+
         socket.emit("nuevoTurno", dataTurno.ID_TURNO);
         setDatosTurno(dataTurno)
         setIsLoading(false);
         setOpen2(true) //Se muestra el segundo modal
     }
+
 
     return (
         <div>
@@ -121,23 +134,23 @@ export default function Agregar({ servicio, id }) {
                     <DialogContent>
 
                         <DialogContentText className='' id='dialog-description'>
-                            <div class="row text-center text-black">
-                                <div class="col-12">
+                            <div className="row text-center text-black">
+                                <div className="col-12">
                                     <h1>Clínica Vida Nueva</h1>
                                 </div>
-                                <div class="col-12 ">
+                                <div className="col-12 ">
                                     <h5>Turno</h5>
                                 </div>
-                                <div class="col-12 ">
+                                <div className="col-12 ">
                                     <h1>{datosTurno.ID_TURNO}</h1>
                                 </div>
-                                <div class="col-12 ">
+                                <div className="col-12 ">
                                     <h5>Tipo de servicio</h5>
                                 </div>
-                                <div class="col-12 ">
+                                <div className="col-12 ">
                                     <h1>{servicio}</h1>
                                 </div>
-                                <div class="col-12 ">
+                                <div className="col-12 ">
                                     <h5>Fecha: {getCurrentDate}</h5>
                                 </div>
                             </div>
@@ -150,6 +163,4 @@ export default function Agregar({ servicio, id }) {
             )}
         </div>
     )
-
-
 }

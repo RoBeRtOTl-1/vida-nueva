@@ -192,7 +192,7 @@ export default function Asidebar() {
                             </nav>
                         </div>
 
-                        <div className="col-sm-12 " >
+                        <div className="col-sm-12" >
                             {contenido}
                         </div>
 

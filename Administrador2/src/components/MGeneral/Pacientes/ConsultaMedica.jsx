@@ -143,7 +143,7 @@ export default function ConsultaMedica({ ID_PACIENTE, ID_USUARIO ,obtenerDatos }
                     <Button className='bg-success text-white' onClick={async () => {
                         setOpen(false)
                         await guardarConsultaMedica()
-                        //obtenerDatos()
+                        obtenerDatos()
                     }} >Guardar</Button>
 
                 </DialogActions>

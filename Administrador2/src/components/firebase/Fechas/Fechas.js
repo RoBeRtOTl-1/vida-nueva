@@ -1,5 +1,30 @@
 import { Timestamp } from "firebase/firestore";
 
+const DIAS = [
+    'Dmingo',
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+];
+
+const MESES = ["Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre"
+];
+
+
 export function ts_to_date(ts) {
     return new Timestamp(ts.seconds, ts.nanoseconds).toDate()
 }
@@ -22,7 +47,23 @@ export function formatearHorario(cadena) {
 
 export function ts_to_HM(timestamp) {
     const fecha = ts_to_date(timestamp)
+    console.log(ts_to_date(timestamp))
+
     const horas = String(fecha.getHours()).padStart(2, '0'); // Obtiene las horas en formato de 24h y asegura que tenga dos dígitos
     const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y asegura que tenga dos dígitos
     return horas + ':' + minutos;
 }
+
+export function formatearFechaHora(timestamp) {
+    const fechaConsulta = ts_to_date(timestamp);
+
+    const year = fechaConsulta.getFullYear()
+    const month = fechaConsulta.getMonth() ;
+    const day = fechaConsulta.getDay();
+
+    const hours = fechaConsulta.getHours();
+    const minutes = fechaConsulta.getMinutes();
+    return `${DIAS[day]} ${day} de ${MESES[month]} del ${year} ${hours}:${minutes} `
+}
+
+

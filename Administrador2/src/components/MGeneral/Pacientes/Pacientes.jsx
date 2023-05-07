@@ -12,7 +12,7 @@ import VerConsultas from "./VerConsultas";
 export default function Pacientes() {
     const [usuarios, setUsuarios] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { currenUser } = useContext(DataContext)
+    const { currenUser } = useContext(DataContext);
 
     async function obtenerDatos() {
         setUsuarios([]);
@@ -31,7 +31,7 @@ export default function Pacientes() {
 
     return (
 
-        <div className="rounded-4 pt-3 mt-5 border-gray shadow-custom" style={{ width: "1250px" }} >
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "1250px" }} >
             <div className="container-fluid mt-4" >
                 <div className="row">
                     <div className="col-6">
@@ -59,14 +59,14 @@ export default function Pacientes() {
                                     dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO,
                                     dato.CURP,
                                     dato.TELEFONO,
-                                    _(<ConsultaMedica ID_PACIENTE={dato.ID} ID_USUARIO={currenUser.ID_USUARIO} obtenerDatos={obtenerDatos} />),
-                                    _(<VerConsultas ID_PACIENTE={dato.ID} ID_USUARIO={currenUser.ID_USUARIO} obtenerDatos={obtenerDatos} />)
+                                    _(<ConsultaMedica ID_PACIENTE={dato.ID} ID_USUARIO={currenUser.ID_USUARIO}  obtenerDatos={obtenerDatos} />),
+                                    _(<VerConsultas ID_PACIENTE={dato.ID} DATOS_PACIENTE={dato} />)
                                 ])}
 
                                 columns={[
                                     'Nombre completo',
                                     'CURP',
-                                    'Email',
+                                    'Telefono',
                                     {
                                         name: 'Acciones',
                                         columns: [{

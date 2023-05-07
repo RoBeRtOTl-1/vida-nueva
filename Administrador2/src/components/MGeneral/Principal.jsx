@@ -2,29 +2,31 @@ import React, { useEffect, useState } from "react";
 
 import SigTurno from "./Principal/SigTurno"
 import Pacientes from "./Pacientes/Pacientes";
+import VisualizarPDF from "./Pacientes/VisualizarPDF";
+import { PDFViewer } from "@react-pdf/renderer";
 
 export default function General() {
     const [fechaHora, setFechaHora] = useState('');
 
     const [title, setTitle] = useState("Principal")
     const [image, setImage] = useState('src/css/img/asidebar/Principal.png')
-    
+
     const [contenido, setContenido] = useState(<SigTurno />)
 
     useEffect(() => {
         const intervalId = setInterval(() => mostrarFechaHora(), 1000);
         return () => clearInterval(intervalId);
-      }, []);
-      
-      function mostrarFechaHora() {
+    }, []);
+
+    function mostrarFechaHora() {
         const fecha = new Date();
         const dia = fecha.getDate();
         const mes = fecha.toLocaleString('default', { month: 'long' });
         const anio = fecha.getFullYear();
         let fechaHoraFormateada = `${dia} de ${mes} ${anio}`;
         setFechaHora(fechaHoraFormateada);
-      }
-      
+    }
+
 
     function handleTitle(newTitle, newImg) {
         setTitle(newTitle)
@@ -40,7 +42,7 @@ export default function General() {
             case "Pacientes":
                 setContenido(<Pacientes />)
                 break;
-            
+
 
         }
     }
@@ -98,7 +100,10 @@ export default function General() {
                         </div>
 
                         <div className="col-sm-12 " >
-                            {contenido}
+                            {/* <PDFViewer style={{ width: "100%", height: '90vh'}}> */}
+                                {contenido}
+                            {/* </PDFViewer> */}
+
                         </div>
                     </div>
 

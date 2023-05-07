@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { BD_Turnos_Actuales } from "../firebase/Turnos/TURN_CRUD";
 
 
 export default function Turnos() {
@@ -7,19 +8,30 @@ export default function Turnos() {
   const [turnosEnCola, setTurnosEnCola] = useState([]);
   const socket = io("http://localhost:4000");
 
+  /**
+     *Hacemos una consulta que nos traera los turnos y se los ponemos a la variable BDturnos 
+     */
 
   useEffect(() => {
-    // Escuchar al servidor Socket.io para recibir el turno actual y la cola de turnos
-    socket.on("turnoActual", (turno) => {
-      setTurnoActual(turno);
+    BD_Turnos_Actuales().then((data) => {
+      socket.emit("DatosActuales", data);
+    })
+
+    /**
+     * Escucha a el evento "colaTurnos"
+     * Cambia la cola de turnos que se muestra en la pantalla
+     */
+    socket.on("colaTurnos", async (turnosActuales) => {
+      setTurnosEnCola(await turnosActuales ? turnosActuales : []);
     });
 
-    socket.on("colaTurnos", (cola) => {
-      setTurnosEnCola(cola);
-    });
-
+    /**
+     * Escucha a el evento "setNextTurno"
+     * Cambia el turno que esta mandando a llamar
+     */
     socket.on("setNextTurno", (nuevturno) => {
       setTurnoActual("");
+      console.log(nuevturno)
       setTurnoActual(nuevturno);
     });
     // Limpiar el evento al desmontar el componente
@@ -34,7 +46,7 @@ export default function Turnos() {
       <div className="row ">
         <div className="col-md-4 bg-light  pe-0 d-flex flex-column vh-100">
           {turnosEnCola.map((turno, index) => (
-            <Rectangle key={index} turno={turno} />
+            <Rectangle key={index.ID} turno={turno.ID_TURNO} />
           ))}
         </div>
         <div className="col-md-8 p-0  d-flex flex-column">
@@ -42,7 +54,7 @@ export default function Turnos() {
             Aqui ira una imagen
           </div>
           <div className="bg-info text-center pt-3" style={{ height: "20%", fontSize: "500%" }}>
-            Turno: {turnoActual}
+            Turno: {turnoActual ? turnoActual.ID_TURNO : null}
           </div>
         </div>
       </div>

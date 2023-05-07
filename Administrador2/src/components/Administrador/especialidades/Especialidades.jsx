@@ -54,7 +54,9 @@ export default function Especialidades() {
                         ) : (
                             <Grid
                                 data={datos.map( dato => [
-                                    dato.ESPECIALIDAD, _(<Estado estado={dato.ID_ESTADOS} />), _(<Modificar dato={dato} obtenerDatos={obtenerDatos}/>)
+                                    dato.ESPECIALIDAD, 
+                                    _(<Estado estado={dato.ID_ESTADOS} />), 
+                                    _(<Modificar dato={dato} obtenerDatos={obtenerDatos}/>)
                                 ])}
                               
                                 columns={[

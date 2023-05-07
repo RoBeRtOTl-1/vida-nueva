@@ -39,10 +39,11 @@ export default function Agregar({ servicio, id }) {
         await actualizarContadores( countServ )
 
         const idTurno = await insertarTurno(id, countServ[id]);  //Inserta un nuevo turno
-
+        
         const dataTurno = await datosNuevoTurno(idTurno); //Obtiene los datos del turno insertado
+        
 
-        socket.emit("nuevoTurno", dataTurno.ID_TURNO);
+        socket.emit("nuevoTurno", dataTurno);
         setDatosTurno(dataTurno)
         setIsLoading(false);
         setOpen2(true) //Se muestra el segundo modal

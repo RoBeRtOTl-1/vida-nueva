@@ -4,34 +4,74 @@ import { Server as SocketServer } from "socket.io";
 import http from "http"
 import cors from "cors"
 import { PORT } from "./config.js";
-import { cola_turnos } from "./cola.js";
 
+let cola_turnos = []
+let turnosActual = {}
 
 
 const app = express()
 const server = http.createServer(app)
 const io = new SocketServer(server, {
     cors: {
-        origin: 'http://localhost:5173'
+        origin: 'http://localhost:5173',
+        methods: ["GET", "POST"],
+        credentials: true
     }
 })
 app.use(cors())
 app.use(morgan("dev"));
 server.listen(PORT)
-console.log("Server esuchando"+PORT)
+console.log("Server esuchando http://localhost:" + PORT)
 
 
 io.on('connection', (socket) => {
 
+    /**
+     * Escucha el evento "nuevoTurno" 
+     * Recibe el objeto "turno" creado, despues añade el 
+     * objeto a la cola, y emite el evento "colaTurnos" para 
+     * cambiar la cola  turnos que se muestran en la pantalla
+     * 
+     */
     socket.on("nuevoTurno", (nuevoTurno) => {
-        cola_turnos.push(nuevoTurno)
-        io.emit("colaTurnos", cola_turnos)
+        cola_turnos.push(nuevoTurno) //Añade el objeto al array
+        io.emit("colaTurnos", cola_turnos) //Pasa como parametro la cola que contiene todos los turnos
     });
 
+    /**
+     * Escucha el evento "anvanzaTurno"
+     * Quita el el primero objeto de la cola de turnos y la guarda
+     * en una variable, despues emite el evento "setNextTurno" 
+     * y "colaTurnos"
+     */
     socket.on("avanzarTurno", () => {
-        let dato = cola_turnos.shift()
-        io.emit("setNextTurno", dato) //
-        io.emit("colaTurnos", cola_turnos)
+        turnosActual = cola_turnos.shift() //Quita el primer objeto de la cola y lo guarda
+        io.emit("setNextTurno", turnosActual) // Pasa como parametro el objeto quitado
+        io.emit("colaTurnos", cola_turnos) // Emite el evento "colaTurnos" para actualizar los turnos 
+        // de la pantalla 
     });
+
+
+    /**
+     * Escucha el evento de "Datos actuales"
+     * Realiza una consulta a firebase para obtener los turnos con las siguientes condiciones:
+     *      -Que sean del dia actual
+     *      -Que tengan el estado "en cola" o "llamado"
+     * 
+     */
+    socket.on("DatosActuales", async (data) => {
+        // console.log("123123")
+        // console.log(data)
+        // console.log(llamado )
+        cola_turnos = data[0]
+        turnosActual = data[1][0] ? data[1][0] : null
+
+        io.emit("setNextTurno", turnosActual)
+        io.emit("colaTurnos", cola_turnos) // Emite el evento "colaTurnos" para actualizar los turnos 
+        //                                    // de la pantalla 
+    });
+
+ 
+
 
 })

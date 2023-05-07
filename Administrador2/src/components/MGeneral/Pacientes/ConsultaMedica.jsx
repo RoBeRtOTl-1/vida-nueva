@@ -9,34 +9,23 @@ import {
     InputAdornment
 } from '@mui/material'
 
-
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Timestamp } from 'firebase/firestore';
-
 import { Toaster, toast } from "react-hot-toast"
 import React, { useState, useEffect } from 'react'
 import { Stack, TextField } from '@mui/material'
-
-
-import { date_to_ts } from '../../firebase/Fechas/Fechas.js';
-import { DataContext } from "../../../context/UserContext.jsx"
-
-
+import { date_to_ts, getCurrentDate } from '../../firebase/Fechas/Fechas.js';
+import { insertarConsulta } from '../../firebase/Consultas/CTAS_CRUD.js';
 
 
 export default function ConsultaMedica({ ID_PACIENTE, ID_USUARIO ,obtenerDatos }) {
     const [open, setOpen] = useState(false)
     
-
     const [datosPer, setDatosPer] = useState({
-        ID_PACIENTES: ID_PACIENTE,
+        ID_PACIENTE: ID_PACIENTE,
         ID_USUARIO: ID_USUARIO,
         PESO: '',
         ESTATURA: '',
         IMC: '',
-        FECHAHORA: '',
+        FECHAHORA: date_to_ts(getCurrentDate()),
         PRESION_SIAST: '',
         PRESION_DIAST: '',
         SINTOMAS: '',
@@ -48,20 +37,12 @@ export default function ConsultaMedica({ ID_PACIENTE, ID_USUARIO ,obtenerDatos }
         setDatosPer({ ...datosPer, [event.target.name]: event.target.value })
     }
 
-    function handleDate(newValue) {
-        datosPer["FECHAHORA"] = date_to_ts(newValue)
-    }
-
-
-    useEffect(() => {
-
-    }, []);
-
     /**
      * Este metodo guarda la consulta medica
      */
     async function guardarConsultaMedica() {
-        console.log(datosPer)
+        await insertarConsulta(datosPer)
+        toast.success("Consulta registrada")
     }
 
 
@@ -162,7 +143,7 @@ export default function ConsultaMedica({ ID_PACIENTE, ID_USUARIO ,obtenerDatos }
                     <Button className='bg-success text-white' onClick={async () => {
                         setOpen(false)
                         await guardarConsultaMedica()
-                        obtenerDatos()
+                        //obtenerDatos()
                     }} >Guardar</Button>
 
                 </DialogActions>

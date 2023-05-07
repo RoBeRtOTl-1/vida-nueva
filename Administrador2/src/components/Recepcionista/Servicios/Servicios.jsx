@@ -28,7 +28,7 @@ export default function Recepcionista() {
                 <div className="container">
                     <div className="row justify-content-center">
                         <div className="col-12 text-center">
-                            <h1 style={{ color: "blue" }}>Selecciona un servicio</h1>
+                            <h1 style={{ color: "blue" }}>Registros de consultas medicas</h1>
                         </div>
                     </div>
                     <div className="row justify-content-center my-3">

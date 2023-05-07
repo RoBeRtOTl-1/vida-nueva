@@ -38,10 +38,6 @@ export default function Turnos() {
                     </div>
                 </div>
 
-
-
-
-
                 <div className="row col-12 mt-4 d-flex justify-content-center">
                     <div className="col-11">
 

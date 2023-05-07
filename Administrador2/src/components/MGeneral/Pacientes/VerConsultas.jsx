@@ -7,67 +7,45 @@ import {
     DialogActions,
     MenuItem
 } from '@mui/material'
-
-
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Timestamp } from 'firebase/firestore';
-
 import { Toaster, toast } from "react-hot-toast"
+import { _, Grid } from 'gridjs-react';
 
 import { useState, useEffect } from 'react'
-import { Stack, TextField } from '@mui/material'
-import { insertarDom } from '../../firebase/Domicilio/Dom_CRUD.js';
-import { date_to_ts } from '../../firebase/Fechas/Fechas.js';
-import { insertarHorario } from '../../firebase/Horarios/HOR_CRUD.js';
-import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD.js';
-import { insertarPaciente } from '../../firebase/Pacientes/PAC_CRUD.js';
+import { formatearFechaHora, ts_to_HM, ts_to_date } from '../../firebase/Fechas/Fechas.js';
+import { get_Expendientes_Paciente } from '../../firebase/Consultas/CTAS_CRUD.js';
+import { DatoDeLaBD as DatoBD_USU } from "../../firebase/Ususarios/USU_CRUD";
+import { DatoDeLaBD as DatoDB_ESP } from '../../firebase/Especialides/ESP_CRUD.js';
+import Visualizar from './Visualizar.jsx';
+import { Document, Page, PDFDownloadLink, Text, View, StyleSheet } from '@react-pdf/renderer'
+import VisualizarPDF from './VisualizarPDF.jsx';
 
 
 
-export default function VerConsultas({ obtenerDatos }) {
+
+
+export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
     const [open, setOpen] = useState(false)
-    const [tiposSangre, setTiposSangre] = useState(TIPOS_DE_SANGRE());
-    const [datosPer, setDatosPer] = useState({
-        NOMBRE: '',
-        AP_MATERNO: '',
-        AP_PATERNO: '',
-        ID_TIP_SANGRE: '',
-        TELEFONO: '',
-        CURP: '',
-        ID_SEXO: '',
-        NACIMIENTO: '',
-        EMAIL: '',
-        ALEGIAS: '',
-        ID_DOMICILIO: ''
-    })
+    const [data, setData] = useState([])
+    const [usuarios, setUsuarios] = useState(new Map())
+    
 
-    const [datosDom, setDatosDom] = useState({
-        CIUDAD: '',
-        COLONIA: '',
-        COD_POSTAL: '',
-        CALLE: '',
-        NUM_INTERIOR: '',
-        NUM_EXTERIOR: ''
-    })
+    async function obtenerExpedientes() {
+        setData([])
+        const registro = await get_Expendientes_Paciente(ID_PACIENTE)
+        setData(registro)
+        const esp = await DatoDB_ESP();
+        const mapa = new Map(esp.map(dato => [dato.ID, dato.ESPECIALIDAD]));
+        const usu = await DatoBD_USU();
 
-
-    function handleDatosPersonales(event) {
-        setDatosPer({ ...datosPer, [event.target.name]: event.target.value })
-    }
-
-    function handleDatosDomicilio(event) {
-        setDatosDom({ ...datosDom, [event.target.name]: event.target.value })
-    }
-
-    function handleDate(newValue) {
-        datosPer["NACIMIENTO"] = date_to_ts(newValue)
+        // const map = new Map(usu.map(dato => [dato.ID,  mapa.get(dato.ID_ESPECIALIDAD) + ' - ' + dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO  ]));
+        const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO + ' - ' + mapa.get(dato.ID_ESPECIALIDAD)]));
+        setUsuarios(map)
+        
     }
 
 
     useEffect(() => {
-
+        obtenerExpedientes()
     }, []);
 
     /**
@@ -75,13 +53,6 @@ export default function VerConsultas({ obtenerDatos }) {
      * Primero inserta al domicilio, guarda su ID y se lo asigna al 
      * objeto que tiene los datos del usuario, y por ultimo inserta los datos del usuario
      */
-    async function insertarPACyDOM() {
-        const ID_DOM = await insertarDom(datosDom);
-        datosPer["ID_DOMICILIO"] = ID_DOM;
-        const ID_USU = await insertarPaciente(datosPer)
-        toast.success('Paciente guardado')
-    }
-
 
     return (
         <div>
@@ -104,7 +75,7 @@ export default function VerConsultas({ obtenerDatos }) {
                 }}>
 
                 <DialogTitle id='dialog-title'>
-                    <span style={{ color: "black", fontSize: "23px" }}>Datos personales</span>
+                    <span style={{ color: "black", fontSize: "23px" }}>Historial de consultas medicas</span>
                     <Button onClick={() => {
                         setOpen(false)
                         reiniciarFormulario()
@@ -112,70 +83,68 @@ export default function VerConsultas({ obtenerDatos }) {
                     <hr />
                 </DialogTitle>
 
+
                 <DialogContent>
+                    <PDFDownloadLink document={<VisualizarPDF DATOS_PACIENTE={DATOS_PACIENTE} MEDICOS={usuarios} DATA={data} />} fileName='JoseJose' >
+                        <Button
+                            variant="text"
+                            color='error'
+                            style={{ textTransform: 'capitalize' }}>
+                            Generar expediente<span>&nbsp;PDF</span>&nbsp;<i className="bi bi-file-pdf"></i>
+                        </Button>
+                    </PDFDownloadLink>
 
                     <DialogContentText className='mt-2' id='dialog-description'>
-                        <Stack spacing={3}>
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Nombre" size="small" name="NOMBRE" value={datosPer.NOMBRE} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="Apellido paterno" name="AP_PATERNO" size="small" value={datosPer.AP_PATERNO} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="Apellido materno" name="AP_MATERNO" size="small" value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
 
-                                <TextField size='small' name="ID_TIP_SANGRE" label="Tipo de sangre" select value={datosPer.ID_TIP_SANGRE} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
-                                    {tiposSangre.map((dato) => (
-                                        <MenuItem value={dato.ID} >{dato.TIPO_SANGRE}</MenuItem>
-                                    ))}
-                                </TextField>
-                            </Stack>
+                        <Grid
+                            data={data.map(dato => [
+                                usuarios.get(dato.ID_USUARIO),
+                                formatearFechaHora(dato.FECHAHORA),
+                                _(<Visualizar datosMedico={usuarios.get(dato.ID_USUARIO)}
+                                    datos={dato} />)
+                            ])}
 
-                            <Stack direction="row" spacing={2}>
-                                <TextField type="number" label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="CURP" name="CURP" size="small" value={datosPer.CURP} onChange={(e) => handleDatosPersonales(e)} />
-
-                                <TextField size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
-                                    onChange={(e) => handleDatosPersonales(e)}>
-                                    <MenuItem value="1">Hombre</MenuItem>
-                                    <MenuItem value="2">Mujer</MenuItem>
-                                </TextField>
-
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DatePicker label="Fecha de nacimiento" onChange={(newValue) => handleDate(newValue)} />
-                                </LocalizationProvider>
+                            columns={[
+                                'Medico',
+                                'Fecha hora',
+                                'Ver consulta'
+                            ]}
 
 
-                            </Stack>
+                            search={{
+                                fields: ['CURP']
+                            }}
 
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Email" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="Alergias" size="small" multiline name="ALERGIAS" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
+                            pagination={{
+                                limit: 5,
+                            }}
 
-                            </Stack>
+                            className={{
+                                table: 'table text-center ',
+                                thead: 'bg-dark-subtle',
+                                tbody: ' ',
+                            }}
 
-                            <h5 style={{ color: "black" }}>Domicilio</h5>
-                            <hr />
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField type="number" label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
-                            </Stack>
+                            language={{
+                                'search': {
+                                    'placeholder': 'Buscar',
 
-                            <Stack direction="row" spacing={2}>
-                                <TextField type="number" label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField type="number" label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                            </Stack>
+                                },
+                                'pagination': {
+                                    'previous': 'Anterior',
+                                    'next': 'Siguiente',
+                                    'showing': 'Mostrando',
+                                    'results': () => 'Registros'
+                                }
+                            }}
+                        />
 
-                        </Stack>
+
                     </DialogContentText>
+
                 </DialogContent>
 
                 <DialogActions className='align-middle'>
-                    <Button className='bg-success text-white' onClick={async () => {
-                        setOpen(false)
-
-                        await insertarPACyDOM()
-                        obtenerDatos()
-                    }} >Guardar</Button>
 
                 </DialogActions>
             </Dialog>

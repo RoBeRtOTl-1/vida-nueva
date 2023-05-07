@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { Timestamp, getFirestore } from "firebase/firestore";
+import { getCurrentDate } from "./Fechas/Fechas";
 
 
 
@@ -28,19 +29,6 @@ export const db = getFirestore(app);
 
 export const auth = getAuth(app)
 
-//Arreglo con servicions
-//const servicios = [];
-
-// servicios.forEach( async servicio => {
-//     const q = query(collection(db, "TURNOS"), where("ID_SERVICIO", "==", servicio));
-
-//     let contador = 0
-//     const querySnapshot = await getDocs(q);
-//     querySnapshot.forEach((doc) => {
-//         contador +=1
-//     });
-//     console.log(`${servicio} = ${contador}`)
-// })
 
 
 

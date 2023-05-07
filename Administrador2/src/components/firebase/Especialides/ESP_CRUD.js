@@ -47,7 +47,6 @@ export async function actualizarEsp(id, datos) {
         "ESPECIALIDAD": datos.nombre,
         "ID_ESTADOS": parseInt(datos.estado),
     });
-    alert("ESPECIALIDADES ACTUALIZADA")
 }
 
 

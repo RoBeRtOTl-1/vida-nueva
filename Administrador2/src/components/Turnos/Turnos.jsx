@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { BD_Turnos_Actuales } from "../firebase/Turnos/TURN_CRUD";
-
+import Image from 'mui-image'
 
 export default function Turnos() {
   const [turnoActual, setTurnoActual] = useState("");
   const [turnosEnCola, setTurnosEnCola] = useState([]);
+  const [url, setUrl] = useState('https://firebasestorage.googleapis.com/v0/b/vidanuevasystem-0.appspot.com/o/Carne_asada_chorizo.jpg?alt=media&token=84e0dc8d-ebdf-45bd-af97-7a52dee3b8de')
   const socket = io("http://localhost:4000");
 
   /**
@@ -51,7 +52,7 @@ export default function Turnos() {
         </div>
         <div className="col-md-8 p-0  d-flex flex-column">
           <div className="bg-secondary" style={{ height: "80%" }} >
-            Aqui ira una imagen
+            <Image src={url} width="100%" height={610} duration={0} fit="cover" />
           </div>
           <div className="bg-info text-center pt-3" style={{ height: "20%", fontSize: "500%" }}>
             Turno: {turnoActual ? turnoActual.ID_TURNO : null}

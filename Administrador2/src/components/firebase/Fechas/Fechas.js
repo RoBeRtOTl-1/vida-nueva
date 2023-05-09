@@ -57,13 +57,15 @@ export function ts_to_HM(timestamp) {
 export function formatearFechaHora(timestamp) {
     const fechaConsulta = ts_to_date(timestamp);
 
+
     const year = fechaConsulta.getFullYear()
     const month = fechaConsulta.getMonth() ;
-    const day = fechaConsulta.getDay();
+    const day = fechaConsulta.getDay()
+    const dayMonth = fechaConsulta.getDate();
 
     const hours = fechaConsulta.getHours();
     const minutes = fechaConsulta.getMinutes();
-    return `${DIAS[day]} ${day} de ${MESES[month]} del ${year} ${hours}:${minutes} `
+    return `${DIAS[day]} ${dayMonth} de ${MESES[month]} del ${year} ${hours}:${String(minutes).padStart(2, '0')} `
 }
 
 

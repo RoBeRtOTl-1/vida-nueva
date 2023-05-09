@@ -24,12 +24,8 @@ export default function Horarios() {
         const usu = await DatoBD_USU();
         const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO]));
 
-        console.log(map)
+        
         setUsuarios(map)
-
-
-
-
         setIsLoading(false);
     }
 

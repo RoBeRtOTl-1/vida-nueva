@@ -113,16 +113,208 @@ export async function BD_Turnos_Actuales() {
 }
 
 export async function DatosBD_Turnos() {
-    const querySnapshot = await getDocs(collection(db, "TURNOS"), orderBy("FECHAHORA"));
+    /**
+     * Se guarda la fecha actual
+     */
     const datos = [];
-    querySnapshot.forEach((doc) => {
-        let list_Data = doc.data()
-        list_Data['ID'] = doc.id
-        datos.push(list_Data);
-    });
 
-    return datos;
+    const fecha = new Date()
+    const currentDate = {
+        year: fecha.getFullYear(),
+        month: fecha.getMonth(),
+        day: fecha.getDate()
+    }
+
+    /* Apuntamos a la coleccion */
+    const turnosRef = collection(db, "TURNOS")
+    /* Ordenamos la consulta */
+    const q = query(turnosRef, orderBy("FECHAHORA"));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+        /* Obtenemos la fecha del turno */
+        let docDate = ts_to_date(doc.data().FECHAHORA)
+        let year = docDate.getFullYear()
+        let month = docDate.getMonth()
+        let day = docDate.getDate()
+
+        if (currentDate.day == day &&
+            currentDate.month && month &&
+            currentDate.year && year) {
+
+
+            let list_Data = doc.data()
+            list_Data['ID'] = doc.id
+            datos.push(list_Data);
+
+
+        }
+
+
+    });
+    return datos
+    // const querySnapshot = await getDocs(collection(db, "TURNOS"), orderBy("FECHAHORA"));
+    // const datos = [];
+    // querySnapshot.forEach((doc) => {
+    //     let list_Data = doc.data()
+    //     list_Data['ID'] = doc.id
+    //     datos.push(list_Data);
+    // });
+
+    // return datos;
 }
+
+export async function BD_Turnos_Estadisticas(DATE_INICIO, DATE_FIN) {
+
+    const datos = [
+        {
+            NOMBRE: "CM Atendidos",
+            TOTAL: 0,
+        },
+        {
+            NOMBRE: "CM Cancelados",
+            TOTAL: 0
+        },
+        {
+            NOMBRE: "TP Atendidos",
+            TOTAL: 0,
+        },
+        {
+            NOMBRE: "TP Cancelados",
+            TOTAL: 0
+        },
+        {
+            NOMBRE: "AI Atendidos",
+            TOTAL: 0,
+        },
+        {
+            NOMBRE: "AI Cancelados",
+            TOTAL: 0
+        },
+        {
+            NOMBRE: "CE Atendidos",
+            TOTAL: 0,
+        },
+        {
+            NOMBRE: "CE Cancelado",
+            TOTAL: 0
+        }
+    ];
+
+
+    /* Apuntamos a la coleccion */
+    const turnosRef = collection(db, "TURNOS")
+    /* Nos traemos los turnos con estados de 
+        Cancelado -> 5
+        Atendido -> 3
+    */
+    const q = query(turnosRef, where('ID_ESTADOS', 'in', [5, 3]));
+    const querySnapshot = await getDocs(q);
+
+    if (DATE_INICIO && DATE_FIN) {
+        // /*Obtenemos la fecha de DATE_INICIO*/
+        // let StartDate = ts_to_date(DATE_INICIO)
+        // let start_year = StartDate.getFullYear()
+        // let start_month = StartDate.getMonth()
+        // let start_day = StartDate.getDate()
+
+        // /*Obtenemos la fecha de DATE_FIN*/
+        // let EndDate = ts_to_date(DATE_INICIO)
+        // let end_year = EndDate.getFullYear()
+        // let end_month = EndDate.getMonth()
+        // let end_day = EndDate.getDate()
+
+
+
+        querySnapshot.forEach((doc) => {
+            //Almacena el ID_SERVICIO
+            let id_s = doc.data().ID_SERVICIO
+            //Almacena el ID_ESTADOS
+            let id_e = doc.data().ID_ESTADOS
+
+            // /* Obtenemos la fecha del turno */
+            let docDate = ts_to_date(doc.data().FECHAHORA)
+            // let doc_year = docDate.getFullYear()
+            // let doc_month = docDate.getMonth()
+            // let doc_day = docDate.getDate()
+
+            if ( DATE_INICIO <= docDate && docDate <= DATE_FIN) {
+                if (id_s == 'CM') {
+                    if (id_e == 3) {
+                        datos[0].TOTAL += 1
+                    }
+                    if (id_e == 5) {
+                        datos[1].TOTAL += 1
+                    }
+                } else if (id_s == 'TP') {
+                    if (id_e == 3) {
+                        datos[2].TOTAL += 1
+                    }
+                    if (id_e == 5) {
+                        datos[3].TOTAL += 1
+                    }
+                } else if (id_s == 'AI') {
+                    if (id_e == 3) {
+                        datos[4].TOTAL += 1
+                    }
+                    if (id_e == 5) {
+                        datos[5].TOTAL += 1
+                    }
+                } else if (id_s == 'CE') {
+                    if (id_e == 3) {
+                        datos[6].TOTAL += 1
+                    }
+                    if (id_e == 5) {
+                        datos[7].TOTAL += 1
+                    }
+                }
+            }
+
+        });
+    } else {
+
+        querySnapshot.forEach((doc) => {
+            //Almacena el ID_SERVICIO
+            let id_s = doc.data().ID_SERVICIO
+            //Almacena el ID_ESTADOS
+            let id_e = doc.data().ID_ESTADOS
+
+            if (id_s == 'CM') {
+                if (id_e == 3) {
+                    datos[0].TOTAL += 1
+                }
+                if (id_e == 5) {
+                    datos[1].TOTAL += 1
+                }
+            } else if (id_s == 'TP') {
+                if (id_e == 3) {
+                    datos[2].TOTAL += 1
+                }
+                if (id_e == 5) {
+                    datos[3].TOTAL += 1
+                }
+            } else if (id_s == 'AI') {
+                if (id_e == 3) {
+                    datos[4].TOTAL += 1
+                }
+                if (id_e == 5) {
+                    datos[5].TOTAL += 1
+                }
+            } else if (id_s == 'CE') {
+                if (id_e == 3) {
+                    datos[6].TOTAL += 1
+                }
+                if (id_e == 5) {
+                    datos[7].TOTAL += 1
+                }
+            }
+
+
+        });
+    }
+    return datos
+}
+
 
 export async function actualizarTurno(id, datos) {
     await updateDoc(doc(db, "TURNOS", id), {

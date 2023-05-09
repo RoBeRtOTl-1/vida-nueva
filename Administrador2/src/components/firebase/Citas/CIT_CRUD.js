@@ -1,21 +1,31 @@
-import { db } from "../firebase"
-import { collection, addDoc ,getDocs, setDoc, doc} from "firebase/firestore";
 
-export function insertar(datos) {
-    console.log(datos)
+import { ts_to_date } from "../Fechas/Fechas";
+import { db } from "../firebase"
+import { collection, addDoc, getDocs, setDoc, doc, where, query, updateDoc, orderBy } from "firebase/firestore";
+
+/**
+ * Inserta una cita en firebase con 
+ */
+export function insertarCita(datos) {
+    console.log(ts_to_date(datos.DATEINICIO))
+    console.log(ts_to_date(datos.DATEFIN))
     try {
-        const tiposDU = addDoc(collection(db, 'ESPECIALIDADES'), {
-            "ESPECIALIDAD": datos.nombre,
-            "ID_ESTADOS": 1
+        const tiposDU = addDoc(collection(db, 'CITAS'), {
+            'ID_PACIENTES': datos.ID_PACIENTE,
+            'ID_USUARIO': datos.ID_USUARIO,
+            'ID_ESTADOS': 7,
+            'DATEINICIO': datos.DATEINICIO,
+            'DATEFIN': datos.DATEFIN
+
         });
-        alert("NUEVA ESPECLIALIDAD INSERTADA")
+        alert("NUEVA CITA INSERTADA")
     } catch (error) {
         alert("OCURRIO UN ERROR - INSERTAR:"
             + "\n" + error)
     }
 }
 
-export async function DatoDeLaBD() {
+export async function get_Citas_BD() {
     const querySnapshot = await getDocs(collection(db, "CITAS"));
     const datos = [];
     querySnapshot.forEach((doc) => {
@@ -23,6 +33,41 @@ export async function DatoDeLaBD() {
         list_Data['ID'] = doc.id
         datos.push(list_Data);
     });
+    return datos;
+}
+
+/**
+ * Recibe el ID_USUARIO (MEDICO)
+ * Retorna todas las citas pendientes del medico
+ */
+export async function get_Citas_Filtradas_BD(ID_USUARIO) {
+
+    const datos = []
+    const turnosRef = collection(db, "CITAS") //Apuntamos a la coleccion
+    const q = query(turnosRef,
+        where('ID_ESTADOS', '==', 7));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+
+        /**
+         * Filtra los documentos con, aceptando solo los que tienen un docuemento
+         * pendiente, y ademas que pertezcan al medico deseado
+         */
+        if (doc.data().ID_ESTADOS == 7 && doc.data().ID_USUARIO == ID_USUARIO) {
+            let list_Data = doc.data()
+
+            let cita = {
+                id: doc.id,
+                title: "Reservada",
+                start: ts_to_date(list_Data.DATEINICIO),
+                end: ts_to_date(list_Data.DATEFIN)
+            }
+            datos.push(cita);
+        }
+
+    });
+    //console.log(datos)
     return datos;
 }
 
@@ -35,8 +80,3 @@ export async function actualizarCita(id, datos) {
     });
     alert("ESPECIALIDADES ACTUALIZADA")
 }
-
-
-
-
-

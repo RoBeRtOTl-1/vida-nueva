@@ -9,6 +9,7 @@ import Especialidades from "./especialidades/Especialidades"
 
 
 import Citas from "./citas/Citas"
+import Estadisticas from "./estadisticas/Estadisticas";
 
 
 export default function Asidebar() {
@@ -63,7 +64,9 @@ export default function Asidebar() {
             case "Especialidades":
                 setContenido(<Especialidades />)
                 break;
-
+            case "Estadisticas":
+                setContenido(<Estadisticas />)
+                break;
             case "Citas":
                 setContenido(<Citas />)
                 break;
@@ -147,7 +150,10 @@ export default function Asidebar() {
 
 
                             <li>
-                                <a href="#" onClick={() => handleTitle("Estadisticas", "src/css/img/asidebar/Estadisticas.png")}>
+                                <a href="#" onClick={() => {
+                                    handleTitle("Estadisticas", "src/css/img/asidebar/Estadisticas.png")
+                                    handleContenido("Estadisticas")
+                                }}>
                                     <img src="src/css/img/asidebar/Estadisticas.png" width={'35px'} />
                                     <span className="link_name">Estadisticas</span>
                                 </a>

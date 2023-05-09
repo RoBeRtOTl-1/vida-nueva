@@ -1,42 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { _, Grid } from 'gridjs-react';
+import Agregar from "./Agregar";
+import Modificar from "./Modificar";
+import { get_BD_Publicidad } from "../../firebase/Publicidad/PUB_CRUD";
+import { formatearFechaHora } from "../../firebase/Fechas/Fechas";
+import Estado from "../estados/Estados";
 
-function handleButtonClick(e, index) {
-    console.log(e + " " + index)
-}
+export default function Publicidad() {
+    const [datos, setDatos] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-function handleRowClick(index) {
-    console.log(index)
-}
+    async function obtenerDatos() {
+        setDatos([]);
+        const datosBD = await get_BD_Publicidad();
+        setDatos(datosBD);
+        setIsLoading(false);
+    }
 
+    useEffect(() => {
+        obtenerDatos();
+    }, []);
 
-export default function TiposUsuario() {
-    const [tipos, setTipos] = useState([
-        {
-            nombre: "Pollo loco",
-            descripcion: "Esta es una imagen del pollo loco",
-            fechaTer: "25/Octubre/2023",
-            estado: "Reproduciendo",
-            
-        },
-        {
-            nombre: "Pollo loco",
-            descripcion: "Esta es una imagen del pollo loco",
-            fechaTer: "25/Octubre/2023",
-            estado: "Reproduciendo",
-            
-        },
-        {
-            nombre: "Pollo loco",
-            descripcion: "Esta es una imagen del pollo loco",
-            fechaTer: "25/Octubre/2023",
-            estado: "Reproduciendo",
-            
-        }
-    ]);
 
     return (
         <div className="rounded-4 pt-3 mt-5 border-gray shadow-custom" style={{ width: "1250px" }} >
-
             <div className="container-fluid mt-4" >
 
                 <div className="row">
@@ -44,57 +31,62 @@ export default function TiposUsuario() {
                         <h3>Publicidad</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <button className="btn btn-primary">Agregar</button>
+                        <Agregar obtenerDatos={obtenerDatos} />
                     </div>
                 </div>
-
-
                 <div className="row mt-3">
-                    <div className="col-6">
+                    <div className="col-12">
+                        {isLoading ?
+                            (
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Grid
+                                    data={datos.map(dato =>[
+                                        dato.NOMBRE,
+                                        dato.DESCRIPCION,
+                                        formatearFechaHora(dato.FECHA_TERMINACION),
+                                        _(<Estado estado={dato.ID_ESTADOS} />),
+                                        _(<Modificar datos={dato} /> )
+                                    ])}
 
-                    </div>
-                    <div className="col-6 d-flex align-items-center">
-                        <label htmlFor="buscar">Buscar:</label>
-                        <input type="text" id="buscar" className="ms-4 form-control" />
-                    </div>
-                </div>
+                                    columns={[
+                                        'Nombre',
+                                        'Descripcion',
+                                        'Fecha terminacion',
+                                        'Estado',
+                                        'Acciones'
+                                    ]}
+                                    search={true}
 
+                                    pagination={{
+                                        limit: 5,
+                                    }}
 
-                <div className="row mt-3">
-                    <div className="col">
-                        <table className="table">
-                            <thead>
-                                <tr className="table-secondary">
-                                    <th>Nombre</th>
-                                    <th>Descripcion</th>
-                                    <th>Fecha terminación</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="align-middle">
-                                {tipos.map((tipo, index) => (
-                                    <tr key={index} onClick={() => handleRowClick(index)}>
-                                        <td>{tipo.nombre}</td>
-                                        <td>{tipo.descripcion}</td>
-                                        <td>{tipo.fechaTer}</td>
-                                        <td>{tipo.estado }</td>
-                                        <td className="d-flex align-items-center" >
-                                            <button className="btn" onClick={(e) => handleButtonClick(e, index)}>
-                                                <img src="src/css/img/acciones/Modificar.png" style={{ width: "30px" }} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    className={{
+                                        table: 'table text-center ',
+                                        thead: 'bg-dark-subtle',
+                                        tbody: ' ',
+                                    }}
 
+                                    language={{
+                                        'search': {
+                                            'placeholder': 'Buscar',
 
-                <div className="row mt-3">
-                    <div className="col">
-                        <h4>Hola mundo</h4>
+                                        },
+                                        'pagination': {
+                                            'previous': 'Anterior',
+                                            'next': 'Siguiente',
+                                            'showing': 'Mostrando',
+                                            'results': () => 'Registros'
+                                        }
+                                    }}
+                                />
+                            )
+                        }
                     </div>
                 </div>
             </div>

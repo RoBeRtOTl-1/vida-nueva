@@ -8,12 +8,12 @@ import {
     MenuItem,
     Box
 } from '@mui/material'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { TextField } from '@mui/material'
 import { DateCalendar } from '@mui/x-date-pickers'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { insertar } from "../../firebase/Citas/CIT_CRUD"
+import { get_Citas_Filtradas_BD, insertarCita } from "../../firebase/Citas/CIT_CRUD"
 import { DatoDeLaBDActivos } from "../../firebase/Especialides/ESP_CRUD";
 import { DatoDeLaBDFiltrado } from "../../firebase/Ususarios/USU_CRUD"
 
@@ -26,7 +26,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import { getCurrentDate } from '../../firebase/Fechas/Fechas';
+import { date_to_ts, getCurrentDate } from '../../firebase/Fechas/Fechas';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -34,26 +34,35 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
-import {
-    List,
-    ListItem,
-    Typography,
-    useTheme,
-} from "@mui/material";
 
 
 
 
+
+
+/** 
+ * Falta agregar el evento que acutalizara la tabla, que viende desde
+ * la clase principal
+*/
 export default function Agregar({ obtenerDatos }) {
-    const [currentEvents, setCurrentEvents] = useState([]);
+    const calendarRef = useRef(null);
+    const [citasMedico, setCitasMedico] = useState([
+        {
+            id: "5123",
+            title: "All-day event",
+            start: '2023-05-10T09:00:00',
+            end: '2023-05-10T10:00:00',
+        },
+    ]);
+    const [currentEvents, setCurrentEvents] = useState()
     /** 
      * En cita se guardaran los datos necesarios para hacer un insert
     */
     const [cita, setCita] = useState({
-        ID_ESTADO: '',
         ID_PACIENTE: '',
         ID_USUARIO: '',
-        FECHAHORA: '',
+        DATEINICIO: '',
+        DATEFIN: ''
     })
 
     /** 
@@ -70,6 +79,8 @@ export default function Agregar({ obtenerDatos }) {
 
     const [especialidad, setEspecialidad] = useState([]);
     const [registros, setRegistros] = useState([]);
+
+    const [fecha, setFecha] = useState(new Date())
 
 
     /**
@@ -94,14 +105,19 @@ export default function Agregar({ obtenerDatos }) {
         setAux({ ...aux, [name]: value })
         const datosBDFiltrados = await DatoDeLaBDFiltrado(value);
         setRegistros(datosBDFiltrados)
+        setCitasMedico([])
     }
 
     /**
      * Cuando se seleccione un medico de la tabla, se ejecutara esta funcion,
      * guardara el ID del medico deseado en el atributo ID_USUARIO
      */
-    const handleRowClick = (row) => {
-        setAux({ ...aux, ["ID_USUARIO"]: row.ID })
+    const handleRowClick = async (row) => {
+        setCita({ ...cita, ["ID_USUARIO"]: row.ID })
+        setCitasMedico(await get_Citas_Filtradas_BD(row.ID))
+        console.log(citasMedico)
+
+        //console.log(calendarRef.current.getApi())
     }
 
 
@@ -109,8 +125,30 @@ export default function Agregar({ obtenerDatos }) {
      * Se manda a llamar cuando se selecciona una fecha en el calendario
      */
     function handleDate(newValue) {
-        setAux({ ...aux, ["FECHAHORA"]: newValue.$d })
+        /**Se cambia la fecha a la fecha seleccionada en el datepicker */
+        calendarRef.current.getApi().gotoDate(new Date(newValue));
+        console.log(calendarRef.current)
     }
+
+
+    const handleDateClick = (selected) => {
+        
+        //const title = prompt("Ingresa algo aqui");
+        const title = "Reservada"
+        const calendarApi = selected.view.calendar;
+        
+        setCita({ ...cita, ['DATEINICIO']: date_to_ts(selected.start), ['DATEFIN']: date_to_ts(selected.end) })
+        calendarApi.unselect();
+        if (title) {
+            calendarApi.addEvent({
+                id: `${selected.dateStr}-${title}`, title,
+                start: selected.startStr,
+                end: selected.endStr,
+                allDay: selected.allDay,
+            });
+        }
+    };
+
 
 
     return (
@@ -139,10 +177,16 @@ export default function Agregar({ obtenerDatos }) {
 
                 <DialogContent>
 
+
                     <div className='container-fluid d-flex'>
                         <div className='col-md-6'>
 
                             <DialogContentText className='mt-2' id='dialog-description'>
+
+                                {/**
+                                 * Este combo box, muestra las especialidades activas
+                                 * cuando se hace click en alguna, se reecarga la tabla de los medicos
+                                 */}
                                 <TextField size='small' label="Epecialidad" name='ID_ESPECIALIDAD' select fullWidth value={aux.ID_ESPECIALIDAD} style={{ minWidth: '250px' }}
                                     onChange={handleChange}>
                                     {especialidad.map((dato, index) => (
@@ -150,6 +194,9 @@ export default function Agregar({ obtenerDatos }) {
                                     ))}
                                 </TextField>
 
+                                {/**
+                                 * En esta tabla cargan los medicos que tienen la especialidad seleccionada
+                                 */}
                                 <TableContainer className='mt-4' component={Paper}>
                                     <Table sx={{ minWidth: 550 }} aria-label="simple table">
                                         <TableHead>
@@ -181,9 +228,12 @@ export default function Agregar({ obtenerDatos }) {
                         </div>
 
                         <div className='col-md-6'>
-
                             <FullCalendar
                                 height="70vh"
+
+                                initialDate={fecha}
+
+                                ref={calendarRef}
 
                                 plugins={[
                                     dayGridPlugin,
@@ -198,18 +248,19 @@ export default function Agregar({ obtenerDatos }) {
                                     right: "",
                                 }}
 
-                                initialView="timeGridDay" //Pone como defecto la vida por dia
+
+                                initialView="timeGridDay" //Pone como defecto la vistaa por dia
                                 allDaySlot={false} //Quita la opcion que es de seleciconar todo el dia
                                 editable={true} //Permite mover los eventos moviendolos con el click + mouse 
                                 eventOverlap={false} //Determina si los eventos se pueden solapar uno encima del otro
-                                
-                                //eventMinHeight={30} //Establece el TAMAÑO minimo del evento, no la hora 
+
+                                eventMinHeight={30} //Establece el TAMAÑO minimo del evento, no la hora 
 
                                 slotDuration={"00:60:00"} //Cambia la hora de duracion del slot
 
-                                
-                                eventColor= {'#70B6DD'}
-                                eventTextColor= {"#000000"} // cambia el color del texto de los eventos
+
+                                eventColor={'#70B6DD'}
+                                eventTextColor={"#000000"} // cambia el color del texto de los eventos
 
                                 slotLabelFormat={{
                                     hour: '2-digit',
@@ -217,43 +268,36 @@ export default function Agregar({ obtenerDatos }) {
                                     hour12: false
                                 }}
 
-                               
+                                slotMinTime="08:00:00"
+                                slotMaxTime="20:00:00"
 
-                                // slotMinTime="08:00:00"
-                                // slotMaxTime="15:00:00"
-                                
                                 selectable={true} //Permite a un usuario resaltar varios días o intervalos de tiempo haciendo clic y arrastrando.
                                 selectMirror={true
                                 } //
                                 dayMaxEvents={true}
-                                select={handleDateClick}
+
+                                //Evento para crear una cita
+                                select={(selected) => handleDateClick(selected)}
+
+
+                                //Evento para eliminar un evento
                                 eventClick={handleEventClick}
+
                                 eventsSet={(events) => setCurrentEvents(events)}
-                                initialEvents={[
-                                    {
-                                        id: "12315",
-                                        title: "All-day event",
-                                        date: "2023-04-14",
-                                    },
-                                    {
-                                        id: "5123",
-                                        title: "Timed event",
-                                        date: "2022-09-28",
-                                    },
-                                ]}
+
+                                initialEvents={ citasMedico }
                             />
                         </div>
                     </div>
-
-
 
                 </DialogContent>
 
                 <DialogActions className='align-middle'>
                     <Button className='bg-success text-white' onClick={async () => {
                         setOpen(false)
-                        await insertar(valores)
+                        await insertarCita(cita)
                         reiniciarFormulario()
+                        obetenerDatos()
                     }} >Guardar</Button>
 
                 </DialogActions>
@@ -261,22 +305,6 @@ export default function Agregar({ obtenerDatos }) {
         </div>
     )
 }
-
-const handleDateClick = (selected) => {
-    console.log(selected)
-    //const title = prompt("Ingresa algo aqui");
-    const title = "Reservada"
-    const calendarApi = selected.view.calendar;
-    calendarApi.unselect();
-    if (title) {
-        calendarApi.addEvent({
-            id: `${selected.dateStr}-${title}`, title,
-            start: selected.startStr,
-            end: selected.endStr,
-            allDay: selected.allDay,
-        });
-    }
-};
 
 const handleEventClick = (selected) => {
     if (

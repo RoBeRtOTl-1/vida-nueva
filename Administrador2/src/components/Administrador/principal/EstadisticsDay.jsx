@@ -20,14 +20,14 @@ ChartJS.register(
   LinearScale,
   PointElement
 )
+
 export default function BarChart() {
   const data = {
     labels: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
     datasets: [
       {
         label: 'Turnos',
-        data: [15, 29, 31, 2, 13, 29, 16, 2, 13
-        ],
+        data: [15, 29, 31, 2, 13, 29, 16, 2, 13],
         backgroundColor: 'white',
         borderColor: 'white',
         pointBorderColor: 'white',

@@ -11,7 +11,7 @@ import {
 import { useState } from 'react'
 import { Stack, TextField } from '@mui/material'
 import { actualizarHorario } from '../../firebase/Horarios/HOR_CRUD.js';
-
+import { Toaster, toast } from "react-hot-toast"
 
 export default function Modificar({ med_nombre, dato, obtenerDatos }) {
 
@@ -22,7 +22,7 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
         JUEVES: dato.JUEVES,
         VIERNES: dato.VIERNES
     })
-    
+
     const [open, setOpen] = useState(false)
 
     function handleDatosHorario(event) {
@@ -31,10 +31,12 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
 
     return (
         <div>
-            <Button onClick={() => {setOpen(true) 
+            <Button onClick={() => {
+                setOpen(true)
                 console.log(med_nombre)
                 console.log(dato)
-                console.log(obtenerDatos)}}>
+                console.log(obtenerDatos)
+            }}>
                 <img
                     src="src/css/img/acciones/Modificar.png"
                     style={{ width: "30px" }}
@@ -87,11 +89,11 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
                             </thead>
                             <tbody className="align-middle">
                                 <tr>
-                                    <td><TextField name="LUNES" multiline value={datosHorario.LUNES} style={{width:"225px"}} size='small' onChange={(e) =>  handleDatosHorario(e)} /></td>
-                                    <td><TextField name="MARTES" multiline value={datosHorario.MARTES} style={{width:"225px"}} size='small' onChange={(e) =>  handleDatosHorario(e)} /></td>
-                                    <td><TextField name="MIERCOLES" multiline value={datosHorario.MIERCOLES} style={{width:"225px"}} size='small' onChange={(e) =>  handleDatosHorario(e)} /></td>
-                                    <td><TextField name="JUEVES" multiline value={datosHorario.JUEVES} style={{width:"225px"}} size='small' onChange={(e) =>  handleDatosHorario(e)} /></td>
-                                    <td><TextField name="VIERNES" multiline value={datosHorario.VIERNES} style={{width:"225px"}} size='small' onChange={(e) =>  handleDatosHorario(e)} /></td>
+                                    <td><TextField name="LUNES" multiline value={datosHorario.LUNES} style={{ width: "225px" }} size='small' onChange={(e) => handleDatosHorario(e)} /></td>
+                                    <td><TextField name="MARTES" multiline value={datosHorario.MARTES} style={{ width: "225px" }} size='small' onChange={(e) => handleDatosHorario(e)} /></td>
+                                    <td><TextField name="MIERCOLES" multiline value={datosHorario.MIERCOLES} style={{ width: "225px" }} size='small' onChange={(e) => handleDatosHorario(e)} /></td>
+                                    <td><TextField name="JUEVES" multiline value={datosHorario.JUEVES} style={{ width: "225px" }} size='small' onChange={(e) => handleDatosHorario(e)} /></td>
+                                    <td><TextField name="VIERNES" multiline value={datosHorario.VIERNES} style={{ width: "225px" }} size='small' onChange={(e) => handleDatosHorario(e)} /></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -103,10 +105,16 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
                         setOpen(false)
                         actualizarHorario(dato.ID, datosHorario)
                         obtenerDatos()
+                        toast.success('Horario modificado') 
                     }} >Modificar</Button>
 
                 </DialogActions>
             </Dialog>
+
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
         </div>
     )
 }

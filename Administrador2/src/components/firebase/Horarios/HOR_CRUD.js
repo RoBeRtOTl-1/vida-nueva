@@ -43,7 +43,6 @@ export async function actualizarHorario(id, datos) {
         JUEVES: datos.JUEVES,
         VIERNES: datos.VIERNES
     }, {merge: true});
-    alert("HORARIO ACTUALIZADO")
 }
 
 

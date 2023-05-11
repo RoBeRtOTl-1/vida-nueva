@@ -11,8 +11,7 @@ import { DateRangePicker } from 'rsuite';
 export default function Estadisticas() {
     const [isLoading, setIsLoading] = useState(true);
 
-    //GB -> Grafico de barras
-    //SG -> SolidGauge
+    const [dateRangeT, setDateRangeT] = useState([new Date().setHours(0, 0, 0, 0), new Date().setHours(23, 59, 59, 999)])
 
     const [dataTurnos, setDataTurnos] = useState([])
     const [dataCitas, setDataCitas] = useState([])
@@ -20,7 +19,6 @@ export default function Estadisticas() {
     async function obtenerTunosCitas() {
         setIsLoading(true)
         setDataTurnos(await BD_Turnos_Estadisticas(null, null));
-        console.log(dataTurnos)
         setIsLoading(false)
     }
     useEffect(() => {
@@ -73,12 +71,17 @@ export default function Estadisticas() {
         { category: "UK", value: 99 }
     ];
 
-    async function hanndleFecha(evt){
 
-        setIsLoading(true)
-        setDataTurnos(await BD_Turnos_Estadisticas(evt[0], evt[1]));
-        console.log(dataTurnos)
-        setIsLoading(false)
+    const hanndleFecha = async (evt) => {
+        if (evt) {
+            setIsLoading(true)
+            setDataTurnos(await BD_Turnos_Estadisticas(evt[0], evt[1]));
+            setIsLoading(false)
+        } else {
+            setIsLoading(true)
+            setDataTurnos(await BD_Turnos_Estadisticas(null, null));
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -86,64 +89,80 @@ export default function Estadisticas() {
             className="rounded-4 pt-3 mt-5 border-gray shadow-custom"
             style={{ width: "1250px" }}>
 
-            {
-                isLoading ?
-                    (
-                        <div class="d-flex justify-content-center">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    )
-                    :
-                    (
-                        <div className="container-fluid mt-4">
 
-                            <div className="row mt-3">
-                                <div className="col-12 text-center d-flex">
-                                    <DateRangePicker 
-                                    character=" - " 
-                                    format="dd-MM-yyyy HH:mm:ss" 
-                                    defaultCalendarValue={[new Date().setHours(0, 0, 0, 0), new Date().setHours(23, 59, 59, 999)]}
-                                    onChange={(evt) => {hanndleFecha(evt)}}/>
-                                    <h2 > Estadisticas de turnos</h2>
+            <div className="container-fluid mt-4">
+
+                <div className="row mt-3">
+                    <div className="col-12 text-center d-flex">
+                        <DateRangePicker
+                            character=" - "
+                            format="dd-MM-yyyy HH:mm:ss"
+                            onClean={() => {
+                                hanndleFecha(null)
+                            }}
+                            defaultCalendarValue={dateRangeT}
+                            onChange={(evt) => {
+                                hanndleFecha(evt)
+                            }} />
+                        <h2 > Estadisticas de turnos</h2>
+                    </div>
+                    <div className="" style={{ height: "500px" }}>
+                        {
+                            isLoading ? (
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
                                 </div>
-
-                                <div className="col-8">
-
-                                    <Turnos_BarChart data={dataTurnos} />
+                            ) : (
+                                <div className="row">
+                                    <div className="col-8">
+                                        <Turnos_BarChart data={dataTurnos} />
+                                    </div>
+                                    <div className="col-4">
+                                        <Turnos_SolidGauge data={dataTurnos} />
+                                    </div>
                                 </div>
-                                <div className="col-4">
-                                    <Turnos_SolidGauge data={dataTurnos} />
+                            )
+                        }
+                    </div>
+                </div >
+
+                <div className="row mt-3">
+                    <div className="col-12 text-center d-flex">
+                        <DateRangePicker
+                            character=" - "
+                            format="dd-MM-yyyy HH:mm:ss"
+                            defaultCalendarValue={[new Date('2022-02-01 00:00:00'), new Date('2022-05-01 23:59:59')]}
+                        />
+                        <h2>Estadisticas de citas</h2>
+                    </div>
+
+                    <div className="" style={{ height: "500px" }}>
+                        {
+                            isLoading ? (
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
                                 </div>
-
-                            </div>
-
-                            <div className="row mt-3">
-                                <div className="col-12 text-center d-flex">
-                                    <DateRangePicker  
-                                    character=" - " 
-                                    format="dd-MM-yyyy HH:mm:ss" 
-                                    defaultCalendarValue={[new Date('2022-02-01 00:00:00'), new Date('2022-05-01 23:59:59')]}
-                                    />
-                                    <h2>Estadisticas de citas</h2>
+                            ) : (
+                                <div className="row">
+                                    <div className="col-8">
+                                        <Citas_BarChart data={dataGB} />
+                                    </div>
+                                    <div className="col-4">
+                                        <Citas_SolidGauge data={data} />
+                                    </div>
                                 </div>
-                                <div className="col-8">
-                                    <Citas_BarChart data={dataGB} />
-                                </div>
-                                <div className="col-4">
-                                    <Citas_SolidGauge data={data} />
-                                </div>
-
-                            </div>
-                        </div>
-
-                    )
-            }
+                            )
+                        }
+                    </div>
+                </div>
+            </div >
 
 
-
-        </div>
+        </div >
 
     );
 }

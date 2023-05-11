@@ -7,6 +7,7 @@ import { DatoDeLaBD as DatoBD_USU } from "../../firebase/Ususarios/USU_CRUD";
 
 import { _, Grid } from 'gridjs-react';
 
+
 export default function Horarios() {
     const [datos, setDatos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -17,13 +18,12 @@ export default function Horarios() {
         setDatos([]);
         setUsuarios(new Map())
 
-        const datosBD = await DatosBD_Horarios();
-        setDatos(datosBD);
-
-
+        
         const usu = await DatoBD_USU();
         const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO]));
-
+        
+        const datosBD = await DatosBD_Horarios();
+        setDatos(datosBD);
         
         setUsuarios(map)
         setIsLoading(false);
@@ -32,12 +32,6 @@ export default function Horarios() {
     useEffect(() => {
         obtenerDatos();
     }, []);
-
-
-    async function actualizarDatos() {
-        //const datosBD = await DatoDeLaBD();
-        //setDatos(datosBD);
-    }
 
 
     return (

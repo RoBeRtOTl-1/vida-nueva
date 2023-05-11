@@ -27,7 +27,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
     const [open, setOpen] = useState(false)
     const [data, setData] = useState([])
     const [usuarios, setUsuarios] = useState(new Map())
-    
+
 
     async function obtenerExpedientes() {
         setData([])
@@ -40,7 +40,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
         // const map = new Map(usu.map(dato => [dato.ID,  mapa.get(dato.ID_ESPECIALIDAD) + ' - ' + dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO  ]));
         const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO + ' - ' + mapa.get(dato.ID_ESPECIALIDAD)]));
         setUsuarios(map)
-        
+
     }
 
 
@@ -70,7 +70,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                 aria-describedby='dialog-description'
                 PaperProps={{
                     style: {
-                        maxWidth: '1000px',
+                        maxWidth: '100%',
                     },
                 }}>
 
@@ -99,14 +99,39 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                         <Grid
                             data={data.map(dato => [
                                 usuarios.get(dato.ID_USUARIO),
+                                dato.SINTOMAS,
+                                dato.DIAGNOSTICO,
+                                dato.MEDICAMENTOS,
                                 formatearFechaHora(dato.FECHAHORA),
                                 _(<Visualizar datosMedico={usuarios.get(dato.ID_USUARIO)}
                                     datos={dato} />)
                             ])}
 
+                            width={"100%"}
                             columns={[
-                                'Medico',
-                                'Fecha hora',
+                                {
+                                    name: 'Medicox  ',
+                                    width: "20%"
+                                },
+                                
+                                {
+                                    name: 'Sintomas',
+                                    width: "20%"
+                                },
+                                {
+                                    name: 'Diagnostico',
+                                    width: "20%"
+                                },
+                                
+                                {
+                                    name: 'Medicamentos',
+                                    width: "20%"
+                                },
+                                
+                                {
+                                    name: 'Fecha hora',
+                                    width: "10%"
+                                },
                                 'Ver consulta'
                             ]}
 

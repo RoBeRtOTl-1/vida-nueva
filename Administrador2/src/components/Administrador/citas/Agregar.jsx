@@ -46,14 +46,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 */
 export default function Agregar({ obtenerDatos }) {
     const calendarRef = useRef(null);
-    const [citasMedico, setCitasMedico] = useState([
-        {
-            id: "5123",
-            title: "All-day event",
-            start: '2023-05-10T09:00:00',
-            end: '2023-05-10T10:00:00',
-        },
-    ]);
+    const [isloading, setIsloading] = useState(false)
+    const [citasMedico, setCitasMedico] = useState([]);
     const [currentEvents, setCurrentEvents] = useState()
     /** 
      * En cita se guardaran los datos necesarios para hacer un insert
@@ -113,11 +107,19 @@ export default function Agregar({ obtenerDatos }) {
      * guardara el ID del medico deseado en el atributo ID_USUARIO
      */
     const handleRowClick = async (row) => {
+        setIsloading(true)
         setCita({ ...cita, ["ID_USUARIO"]: row.ID })
         setCitasMedico(await get_Citas_Filtradas_BD(row.ID))
-        console.log(citasMedico)
+        setIsloading(false)
+        // console.log('---')
+        // citasMedico.map(cita => {
+        //     calendarRef.current.getApi().select(cita)
 
-        //console.log(calendarRef.current.getApi())
+        // })
+        //calendarRef.current.getApi().addEvent(citasMedico)
+        
+
+        //console.log(citasMedico) //Imprime los eventos del medico seleccionado 
     }
 
 
@@ -127,16 +129,18 @@ export default function Agregar({ obtenerDatos }) {
     function handleDate(newValue) {
         /**Se cambia la fecha a la fecha seleccionada en el datepicker */
         calendarRef.current.getApi().gotoDate(new Date(newValue));
-        console.log(calendarRef.current)
+
+        //console.log(calendarRef.current)
     }
 
 
     const handleDateClick = (selected) => {
-        
+
         //const title = prompt("Ingresa algo aqui");
         const title = "Reservada"
         const calendarApi = selected.view.calendar;
-        
+        console.log(calendarApi)
+
         setCita({ ...cita, ['DATEINICIO']: date_to_ts(selected.start), ['DATEFIN']: date_to_ts(selected.end) })
         calendarApi.unselect();
         if (title) {
@@ -161,7 +165,7 @@ export default function Agregar({ obtenerDatos }) {
                 aria-describedby='dialog-description'
                 PaperProps={{
                     style: {
-                        maxWidth: '90%',
+                        maxWidth: '100%',
                     },
                 }}>
 
@@ -228,65 +232,79 @@ export default function Agregar({ obtenerDatos }) {
                         </div>
 
                         <div className='col-md-6'>
-                            <FullCalendar
-                                height="70vh"
 
-                                initialDate={fecha}
+                            {
+                                isloading ?
+                                    (
+                                        <div class="d-flex justify-content-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    ) : (
 
-                                ref={calendarRef}
+                                        <FullCalendar
+                                            height="70vh"
 
-                                plugins={[
-                                    dayGridPlugin,
-                                    timeGridPlugin,
-                                    interactionPlugin,
-                                    listPlugin,
-                                ]}
+                                            initialDate={fecha}
 
-                                headerToolbar={{
-                                    left: "",
-                                    center: "title",
-                                    right: "",
-                                }}
+                                            ref={calendarRef}
 
+                                            plugins={[
+                                                dayGridPlugin,
+                                                timeGridPlugin,
+                                                interactionPlugin,
+                                                listPlugin,
+                                            ]}
 
-                                initialView="timeGridDay" //Pone como defecto la vistaa por dia
-                                allDaySlot={false} //Quita la opcion que es de seleciconar todo el dia
-                                editable={true} //Permite mover los eventos moviendolos con el click + mouse 
-                                eventOverlap={false} //Determina si los eventos se pueden solapar uno encima del otro
-
-                                eventMinHeight={30} //Establece el TAMAÑO minimo del evento, no la hora 
-
-                                slotDuration={"00:60:00"} //Cambia la hora de duracion del slot
-
-
-                                eventColor={'#70B6DD'}
-                                eventTextColor={"#000000"} // cambia el color del texto de los eventos
-
-                                slotLabelFormat={{
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: false
-                                }}
-
-                                slotMinTime="08:00:00"
-                                slotMaxTime="20:00:00"
-
-                                selectable={true} //Permite a un usuario resaltar varios días o intervalos de tiempo haciendo clic y arrastrando.
-                                selectMirror={true
-                                } //
-                                dayMaxEvents={true}
-
-                                //Evento para crear una cita
-                                select={(selected) => handleDateClick(selected)}
+                                            headerToolbar={{
+                                                left: "",
+                                                center: "title",
+                                                right: "",
+                                            }}
 
 
-                                //Evento para eliminar un evento
-                                eventClick={handleEventClick}
+                                            initialView="timeGridDay" //Pone como defecto la vistaa por dia
+                                            allDaySlot={false} //Quita la opcion que es de seleciconar todo el dia
+                                            editable={true} //Permite mover los eventos moviendolos con el click + mouse 
+                                            eventOverlap={false} //Determina si los eventos se pueden solapar uno encima del otro
 
-                                eventsSet={(events) => setCurrentEvents(events)}
+                                            eventMinHeight={30} //Establece el TAMAÑO minimo del evento, no la hora 
 
-                                initialEvents={ citasMedico }
-                            />
+                                            slotDuration={"00:60:00"} //Cambia la hora de duracion del slot
+
+
+                                            eventColor={'#70B6DD'}
+                                            eventTextColor={"#000000"} // cambia el color del texto de los eventos
+
+                                            slotLabelFormat={{
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: false
+                                            }}
+
+                                            slotMinTime="08:00:00"
+                                            slotMaxTime="20:00:00"
+
+                                            selectable={true} //Permite a un usuario resaltar varios días o intervalos de tiempo haciendo clic y arrastrando.
+                                            selectMirror={true
+                                            } //
+                                            dayMaxEvents={true}
+
+                                            //Evento para crear una cita
+                                            select={(selected) => handleDateClick(selected)}
+
+
+                                            //Evento para eliminar un evento
+                                            eventClick={handleEventClick}
+
+                                            eventsSet={(events) => setCurrentEvents(events)}
+
+
+                                            initialEvents={citasMedico}
+                                        />
+                                    )
+                            }
                         </div>
                     </div>
 
@@ -309,9 +327,11 @@ export default function Agregar({ obtenerDatos }) {
 const handleEventClick = (selected) => {
     if (
         window.confirm(
-            `Are you sure you want to delete the event '${selected.event.title}'`
+            `Are you sure you want to delete the event '${selected.event.id}'`
         )
     ) {
         selected.event.remove();
     }
 };
+
+

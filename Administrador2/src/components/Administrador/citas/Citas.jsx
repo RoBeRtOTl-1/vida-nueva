@@ -38,7 +38,7 @@ export default function Citas() {
 
     return (
 
-        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "1250px" }} >
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px"}} >
             <div className="container-fluid mt-4" >
                 <div className="row">
                     <div className="col-6">
@@ -46,15 +46,6 @@ export default function Citas() {
                     </div>
                     <div className="col-6 text-end">
                         <Agregar />
-                    </div>
-                </div>
-
-
-                <div className="row mt-3">
-                    <div className="col-6"></div>
-                    <div className="col-6 d-flex align-items-center">
-                        <label htmlFor="buscar">Buscar:</label>
-                        <input type="text" id="buscar" className="ms-4 form-control" />
                     </div>
                 </div>
 

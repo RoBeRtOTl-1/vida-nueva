@@ -28,7 +28,8 @@ export default function Agregar({obtenerDatos}) {
             <Button style={{ backgroundColor: "#0048FF", color: "white" }} onClick={() => setOpen(true)}>Agregar</Button>
             <Dialog
                 open={open}
-                onClose={() => setOpen(false)}
+                onClose={() => {setOpen(false)
+                }}
                 aria-labelledby='dialog-title'
                 aria-describedby='dialog-description'
                 PaperProps={{
@@ -43,6 +44,7 @@ export default function Agregar({obtenerDatos}) {
                     <Button onClick={() => {
                         setOpen(false)
                         reiniciarFormulario()
+
                     }}>X</Button>
                     <hr />
                 </DialogTitle>

@@ -25,7 +25,7 @@ export default function Turnos() {
 
     return (
 
-        <div className="rounded-4 pt-3 mt-5 border-gray shadow-custom" style={{ width: "1250px" }} >
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px"}} >
 
             <div className="container-fluid mt-4" >
 

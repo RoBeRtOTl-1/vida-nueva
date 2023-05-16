@@ -82,6 +82,8 @@ export default function Estadisticas() {
             setDataTurnos(await BD_Turnos_Estadisticas(null, null));
             setIsLoading(false)
         }
+        console.log('Hola')
+        console.log(dataTurnos)
     }
 
     return (
@@ -103,7 +105,14 @@ export default function Estadisticas() {
                             defaultCalendarValue={dateRangeT}
                             onChange={(evt) => {
                                 hanndleFecha(evt)
-                            }} />
+                            }} 
+
+                            //Quita los busquedas por defecto, tales como "Today", "Yesterdar", "Last 7 days"
+                            ranges={[]}
+
+                            placeholder={'DD-MM-YYYY HH:MM:SS - DD-MM-YYYY HH:MM:SS'}
+                            
+                            />
                         <h2 > Estadisticas de turnos</h2>
                     </div>
                     <div className="" style={{ height: "500px" }}>

@@ -6,22 +6,32 @@ import Modificar from "./Modificar";
 import Estado from "../estados/Estados";
 
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
+
 
 export default function Usuarios() {
     const [usuarios, setUsuarios] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [tipUsu, setTipUsu] = useState(new Map())
-
+    const [cedulas, setCedulas] = useState([])
+    const [correos, setCorreos] = useState([])
 
     async function obtenerDatos() { 
         setUsuarios([]);
         setTipUsu(new Map());        
+        setCedulas([])
+        setCorreos([])
 
-        const datosBD = await DatoDeLaBD();
-        setUsuarios(datosBD);
-
+        const datosBD = await DatoDeLaBD();        
+        const arrCedulas = (datosBD.map ( dato => dato.CEDULA ))
+        const arrCorreos = (datosBD.map ( dato => dato.EMAIL ))
+        
         const tU = await DatoBD_TDU();
         const map =  new Map(tU.map(dato => [dato.ID, dato.NOMBRE]));
+        
+        setUsuarios(datosBD);
+        setCedulas(arrCedulas)
+        setCorreos(arrCorreos)
         setTipUsu(map);    
         setIsLoading(false);
     }
@@ -40,7 +50,7 @@ export default function Usuarios() {
                         <h3>Usuarios</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar obtenerDatos={obtenerDatos} />
+                        <Agregar obtenerDatos={obtenerDatos} cedulas={cedulas} correos={correos} />
                     </div>
                 </div>
 
@@ -86,18 +96,7 @@ export default function Usuarios() {
                                     tbody: ' ',
                                 }}
 
-                                language={{
-                                    'search': {
-                                        'placeholder': 'Nombre del medico',
-
-                                    },
-                                    'pagination': {
-                                        'previous': 'Anterior',
-                                        'next': 'Siguiente',
-                                        'showing': 'Mostrando',
-                                        'results': () => 'Registros'
-                                    }
-                                }}
+                                language={esES}
                             />
 
                            

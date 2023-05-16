@@ -20,7 +20,7 @@ export async function insertarUSU(datos) {
             TELEFONO: datos.TELEFONO,
             ID_ESTADOS: 1
         });
-        alert("NUEVA USUARIO INSERTADADO")
+        
         return newUsuario.id
     } catch (error) {
         alert("OCURRIO UN ERROR - INSERTAR:"

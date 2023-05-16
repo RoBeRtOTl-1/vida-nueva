@@ -11,9 +11,10 @@ import {
 import { Stack, TextField } from '@mui/material'
 import { useState } from 'react'
 import { actualizarEsp } from "../../firebase/Especialides/ESP_CRUD"
+import { Toaster, toast } from "react-hot-toast"
 
 
-export default function Modificar({dato,obtenerDatos}) {
+export default function Modificar({ dato, obtenerDatos }) {
     const [open, setOpen] = useState(false)
     const [nombre, setNombre] = useState(dato.ESPECIALIDAD);
     const [estado, setEstado] = useState(dato.ID_ESTADOS);
@@ -23,12 +24,20 @@ export default function Modificar({dato,obtenerDatos}) {
         estado
     };
 
-    function reiniciarFormulario() {
-        setNombre('')
-    }
-
     function handleChange(event) {
         setEstado(event.target.value)
+    }
+
+    const modificarEspecialidad = async () => {
+        //Revisamos que tenga datos
+        if (nombre) {
+            setOpen(false)
+            await actualizarEsp(dato.ID, valoresSeleccionados)
+            obtenerDatos()
+            toast.success('Especialidad modificada')
+        } else {
+            toast.error('INGRESE UNA ESPECIALIDAD')
+        }
     }
     return (
         <>
@@ -78,19 +87,21 @@ export default function Modificar({dato,obtenerDatos}) {
                                     <MenuItem value="2">Inactivo</MenuItem>
                                 </TextField>
                             </div>
-                            
+
                         </div>
                     </DialogContentText>
                 </DialogContent>
 
                 <DialogActions className='align-middle'>
                     <Button className='bg-success text-white' onClick={async () => {
-                        setOpen(false)
-                        await actualizarEsp(dato.ID, valoresSeleccionados)
-                        obtenerDatos()
+                        modificarEspecialidad()
                     }} >Modificar</Button>
 
                 </DialogActions>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
             </Dialog>
         </>
     )

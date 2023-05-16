@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import Agregar from "./Agregar";
 
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
 import { get_Pacientes_BD } from "../../firebase/Pacientes/PAC_CRUD";
 
 import ConsultaMedica from "./ConsultaMedica";
@@ -31,7 +32,7 @@ export default function Pacientes() {
 
     return (
 
-        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "1250px" }} >
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px"}}>
             <div className="container-fluid mt-4" >
                 <div className="row">
                     <div className="col-6">
@@ -91,18 +92,7 @@ export default function Pacientes() {
                                     tbody: ' ',
                                 }}
 
-                                language={{
-                                    'search': {
-                                        'placeholder': 'CURP',
-
-                                    },
-                                    'pagination': {
-                                        'previous': 'Anterior',
-                                        'next': 'Siguiente',
-                                        'showing': 'Mostrando',
-                                        'results': () => 'Registros'
-                                    }
-                                }}
+                                language={esES}
                             />
 
 

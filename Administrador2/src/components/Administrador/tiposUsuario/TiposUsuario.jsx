@@ -5,14 +5,21 @@ import { DatoDeLaBD } from "../../firebase/TiposDeUsuarios/TDU_CRUD";
 import Estado from "../estados/Estados";
 
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
 
 export default function TiposUsuario() {
     const [datos, setDatos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [tdu, setTdu] = useState([])
 
     async function obtenerDatos() {
         setDatos([]);
+        setTdu([])
+
         const datosBD = await DatoDeLaBD();
+        const arrTdu = (datosBD.map ( dato => dato.NOMBRE ))
+
+        setTdu(arrTdu)
         setDatos(datosBD);
         setIsLoading(false);
     }
@@ -38,7 +45,7 @@ export default function TiposUsuario() {
                         <h3>Tipos de usuarios</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar obtenerDatos={obtenerDatos} />
+                        <Agregar obtenerDatos={obtenerDatos} tdu={tdu} />
                     </div>
                 </div>
                 <div className="row col-12 mt-4 d-flex justify-content-center ">
@@ -85,28 +92,12 @@ export default function TiposUsuario() {
                                     tbody: ' ',
                                 }}
 
-                                language={{
-                                    'search': {
-                                        'placeholder': 'Tipo de usuario',
-
-                                    },
-                                    'pagination': {
-                                        'previous': 'Anterior',
-                                        'next': 'Siguiente',
-                                        'showing': 'Mostrando',
-                                        'results': () => 'Registros'
-                                    }
-                                }}
+                                language={esES}
                             />
 
 
                         )}
                     </div>
-                </div>
-            </div>
-            <div className="row mt-3">
-                <div className="col">
-                    <h4></h4>
                 </div>
             </div>
         </div>

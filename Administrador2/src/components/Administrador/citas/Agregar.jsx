@@ -30,10 +30,11 @@ import { date_to_ts, getCurrentDate } from '../../firebase/Fechas/Fechas';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
-
-
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
+
+import { get_Horario_Medico_BD } from '../../firebase/Horarios/HOR_CRUD';
+import { Toaster, toast } from "react-hot-toast"
 
 
 
@@ -44,11 +45,21 @@ import interactionPlugin from "@fullcalendar/interaction";
  * Falta agregar el evento que acutalizara la tabla, que viende desde
  * la clase principal
 */
-export default function Agregar({ obtenerDatos }) {
+export default function Agregar(props) {
     const calendarRef = useRef(null);
     const [isloading, setIsloading] = useState(false)
     const [citasMedico, setCitasMedico] = useState([]);
-    const [currentEvents, setCurrentEvents] = useState()
+    const [currentEvents, setCurrentEvents] = useState({
+        1: { min: '00:00:00', max: '00:00:00' },
+        2: { min: '00:00:00', max: '00:00:00' },
+        3: { min: '00:00:00', max: '00:00:00' },
+        4: { min: '00:00:00', max: '00:00:00' },
+        5: { min: '00:00:00', max: '00:00:00' }
+    })
+
+    const [slots, setSlots] = useState()
+    const [currSlots, setCurrSlots] = useState({ min: '00:00:00', max: '00:00:00' })
+
     /** 
      * En cita se guardaran los datos necesarios para hacer un insert
     */
@@ -74,7 +85,7 @@ export default function Agregar({ obtenerDatos }) {
     const [especialidad, setEspecialidad] = useState([]);
     const [registros, setRegistros] = useState([]);
 
-    const [fecha, setFecha] = useState(new Date())
+    const [fecha, setFecha] = useState(null)
 
 
     /**
@@ -108,18 +119,12 @@ export default function Agregar({ obtenerDatos }) {
      */
     const handleRowClick = async (row) => {
         setIsloading(true)
+
+        setCurrSlots({ min: '00:00:00', max: '00:00:00' })
         setCita({ ...cita, ["ID_USUARIO"]: row.ID })
         setCitasMedico(await get_Citas_Filtradas_BD(row.ID))
+        setSlots(await get_Horario_Medico_BD(row.ID))
         setIsloading(false)
-        // console.log('---')
-        // citasMedico.map(cita => {
-        //     calendarRef.current.getApi().select(cita)
-
-        // })
-        //calendarRef.current.getApi().addEvent(citasMedico)
-        
-
-        //console.log(citasMedico) //Imprime los eventos del medico seleccionado 
     }
 
 
@@ -129,6 +134,8 @@ export default function Agregar({ obtenerDatos }) {
     function handleDate(newValue) {
         /**Se cambia la fecha a la fecha seleccionada en el datepicker */
         calendarRef.current.getApi().gotoDate(new Date(newValue));
+        setFecha(newValue)
+        setCurrSlots(slots[newValue.$W])
 
         //console.log(calendarRef.current)
     }
@@ -139,7 +146,6 @@ export default function Agregar({ obtenerDatos }) {
         //const title = prompt("Ingresa algo aqui");
         const title = "Reservada"
         const calendarApi = selected.view.calendar;
-        console.log(calendarApi)
 
         setCita({ ...cita, ['DATEINICIO']: date_to_ts(selected.start), ['DATEFIN']: date_to_ts(selected.end) })
         calendarApi.unselect();
@@ -153,6 +159,13 @@ export default function Agregar({ obtenerDatos }) {
         }
     };
 
+
+    // const hanndleCita = async () => {
+    //     setOpen(false)
+    //     await insertarCita(cita)
+    //     props.obtenerDatos()
+    //     toast.success('Cita reservada')
+    // }
 
 
     return (
@@ -174,7 +187,7 @@ export default function Agregar({ obtenerDatos }) {
 
                     <Button onClick={() => {
                         setOpen(false)
-                        reiniciarFormulario()
+
                     }}>X</Button>
                     <hr />
                 </DialogTitle>
@@ -225,8 +238,14 @@ export default function Agregar({ obtenerDatos }) {
 
 
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DateCalendar onChange={(newValue) => handleDate(newValue)} />
+                                    <DateCalendar
+                                        shouldDisableDate={(date) => {
+                                            return date.$W === 0 || date.$W === 6;
+                                        }}
+                                        onChange={(newValue) => handleDate(newValue)}
+                                    />
                                 </LocalizationProvider>
+
 
                             </DialogContentText>
                         </div>
@@ -245,8 +264,6 @@ export default function Agregar({ obtenerDatos }) {
 
                                         <FullCalendar
                                             height="70vh"
-
-                                            initialDate={fecha}
 
                                             ref={calendarRef}
 
@@ -273,18 +290,19 @@ export default function Agregar({ obtenerDatos }) {
 
                                             slotDuration={"00:60:00"} //Cambia la hora de duracion del slot
 
-
-                                            eventColor={'#70B6DD'}
-                                            eventTextColor={"#000000"} // cambia el color del texto de los eventos
-
                                             slotLabelFormat={{
                                                 hour: '2-digit',
                                                 minute: '2-digit',
                                                 hour12: false
                                             }}
 
-                                            slotMinTime="08:00:00"
-                                            slotMaxTime="20:00:00"
+                                            eventColor={'#70B6DD'}
+                                            eventTextColor={"#000000"} // cambia el color del texto de los eventos
+
+                                            slotMinTime={currSlots.min}
+                                            slotMaxTime={currSlots.max}
+
+
 
                                             selectable={true} //Permite a un usuario resaltar varios días o intervalos de tiempo haciendo clic y arrastrando.
                                             selectMirror={true
@@ -295,13 +313,17 @@ export default function Agregar({ obtenerDatos }) {
                                             select={(selected) => handleDateClick(selected)}
 
 
+                                            weekends={false}
                                             //Evento para eliminar un evento
-                                            eventClick={handleEventClick}
+                                            //eventClick={handleEventClick}
 
                                             eventsSet={(events) => setCurrentEvents(events)}
 
 
                                             initialEvents={citasMedico}
+
+
+
                                         />
                                     )
                             }
@@ -312,26 +334,31 @@ export default function Agregar({ obtenerDatos }) {
 
                 <DialogActions className='align-middle'>
                     <Button className='bg-success text-white' onClick={async () => {
+                        // hanndleCita()
                         setOpen(false)
                         await insertarCita(cita)
-                        reiniciarFormulario()
-                        obetenerDatos()
+                        props.obtenerDatos()
+                        toast.success('Cita reservada')
                     }} >Guardar</Button>
 
                 </DialogActions>
             </Dialog>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
         </div>
     )
 }
 
-const handleEventClick = (selected) => {
-    if (
-        window.confirm(
-            `Are you sure you want to delete the event '${selected.event.id}'`
-        )
-    ) {
-        selected.event.remove();
-    }
-};
+// const handleEventClick = (selected) => {
+//     if (
+//         window.confirm(
+//             `Are you sure you want to delete the event '${selected.event.id}'`
+//         )
+//     ) {
+//         selected.event.remove();
+//     }
+// };
 
 

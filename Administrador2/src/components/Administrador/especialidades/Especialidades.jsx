@@ -5,14 +5,24 @@ import Agregar from "./Agregar";
 import Modificar from "./Modificar";
 
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
 
 export default function Especialidades() {
     const [datos, setDatos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [BDesp, setBDesp] =  useState([])
 
     async function obtenerDatos() {
         setDatos([])
+        setBDesp([])
+
         const datosBD = await DatoDeLaBD();
+        const arrEsp = (datosBD.map ( esp => esp.ESPECIALIDAD ))
+        
+        setBDesp(arrEsp)
+
+        console.log(arrEsp)
+
         setDatos(datosBD);
         setIsLoading(false);
     }
@@ -38,7 +48,7 @@ export default function Especialidades() {
                         <h3>Especialidades</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar obtenerDatos={obtenerDatos} />
+                        <Agregar obtenerDatos={obtenerDatos} BDesp={BDesp} />
                     </div>
                 </div>
          
@@ -76,18 +86,7 @@ export default function Especialidades() {
                                     tbody: ' ',
                                 }}
 
-                                language={{
-                                    'search': {
-                                        'placeholder': 'Especialidad',
-
-                                    },
-                                    'pagination': {
-                                        'previous': 'Anterior',
-                                        'next': 'Siguiente',
-                                        'showing': 'Mostrando',
-                                        'results': () => 'Registros'
-                                    }
-                                }}
+                                language={esES}
                             />
 
                         )}

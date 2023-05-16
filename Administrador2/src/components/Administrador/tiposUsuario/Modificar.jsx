@@ -11,17 +11,17 @@ import {
 import { useState } from 'react'
 import { Stack, TextField } from '@mui/material'
 import { actualizarRol } from "../../firebase/TiposDeUsuarios/TDU_CRUD.js"
+import { Toaster, toast } from "react-hot-toast"
 
-
-export default function Modificar({dato,obtenerDatos}) {
+export default function Modificar({ dato, obtenerDatos }) {
 
     const [open, setOpen] = useState(false)
 
     const [admin, setAdmin] = useState(dato.ADMINISTRACION);
-    const [recepcion, setRecepcion] = useState(dato.RECEPCION );
+    const [recepcion, setRecepcion] = useState(dato.RECEPCION);
     const [turnos, setTurnos] = useState(dato.TURNOS);
     const [medicoGral, setMedicoGral] = useState(dato.MEDICOGENERAL);
-    const [especialista, setEspecialista] = useState(dato.ESPECIALISTA );
+    const [especialista, setEspecialista] = useState(dato.ESPECIALISTA);
     const [nombre, setNombre] = useState(dato.NOMBRE);
     const [estado, setEstado] = useState(dato.ID_ESTADOS);
 
@@ -45,9 +45,21 @@ export default function Modificar({dato,obtenerDatos}) {
         setEstado('')
     }
 
-    function handleChange(event){
+    function handleChange(event) {
         setEstado(event.target.value)
         console.log(estado)
+    }
+
+    const actualizarTDU = async () => {
+        if (nombre) {  //Revisamos que haya un nombre
+            setOpen(false)
+            await actualizarRol(dato.ID, valoresSeleccionados)
+            reiniciarFormulario()
+            obtenerDatos()
+            toast.success('Tipo de usuario modificado')
+        } else {
+            toast.error('INGRESA UN NOMBRE')
+        }
     }
     return (
         <div>
@@ -70,7 +82,7 @@ export default function Modificar({dato,obtenerDatos}) {
                 }}>
 
                 <DialogTitle id='dialog-title'>
-                    
+
                     Modificar
                     <Button onClick={() => {
                         setOpen(false)
@@ -92,7 +104,7 @@ export default function Modificar({dato,obtenerDatos}) {
 
                             <div className="col-md-6">
                                 <TextField size='small' label="ESTADO" select fullWidth value={estado} style={{ minWidth: '250px' }}
-                                onChange={handleChange}>
+                                    onChange={handleChange}>
                                     <MenuItem value="1">Activo</MenuItem>
                                     <MenuItem value="2">Inactivo</MenuItem>
                                 </TextField>
@@ -126,15 +138,15 @@ export default function Modificar({dato,obtenerDatos}) {
 
                 <DialogActions className='align-middle'>
                     <Button className='bg-success text-white' onClick={() => {
-                        setOpen(false)
-                        obtenerDatos()
-                        actualizarRol(dato.ID, valoresSeleccionados)
-                        reiniciarFormulario()
-                        obtenerDatos()
+                        actualizarTDU()
                     }} >Modificar</Button>
 
                 </DialogActions>
             </Dialog>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
         </div>
     )
 }

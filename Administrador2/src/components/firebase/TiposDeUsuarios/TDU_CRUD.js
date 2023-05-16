@@ -13,7 +13,7 @@ export function insertar(datos) {
             "MEDICOGENERAL": datos.medicoGral,
             "ESPECIALISTA": datos.especialista
         });
-        alert("NUEVO ROL INSERTADO")
+
     } catch (error) {
         alert("OCURRIO UN ERROR - INSERTAR:"
             + "\n" + error)
@@ -70,7 +70,7 @@ export async function actualizarRol(id, datos) {
         "MEDICOGENERAL": datos.medicoGral,
         "ESPECIALISTA": datos.especialista
     });
-    alert("Rol actualizado")
+
 }
 
 

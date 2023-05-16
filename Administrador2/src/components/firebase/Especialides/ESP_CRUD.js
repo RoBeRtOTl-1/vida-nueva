@@ -8,7 +8,6 @@ export function insertar(datos) {
             "ESPECIALIDAD": datos.nombre,
             "ID_ESTADOS": 1
         });
-        alert("NUEVA ESPECLIALIDAD INSERTADA")
     } catch (error) {
         alert("OCURRIO UN ERROR - INSERTAR:"
             + "\n" + error)

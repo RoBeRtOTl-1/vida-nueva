@@ -9,9 +9,10 @@ import {
 import { useState } from 'react'
 import { Stack, TextField } from '@mui/material'
 import { insertar } from "../../firebase/TiposDeUsuarios/TDU_CRUD.js"
+import { Toaster, toast } from "react-hot-toast"
 
 
-export default function Agregar({obtenerDatos}) {
+export default function Agregar({ obtenerDatos, tdu }) {
     const [open, setOpen] = useState(false)
     const [admin, setAdmin] = useState(false);
     const [recepcion, setRecepcion] = useState(false);
@@ -38,6 +39,23 @@ export default function Agregar({obtenerDatos}) {
         setEspecialista(false)
         setNombre('')
     }
+
+    const insertarTDU = async () => {
+        if (nombre) {  //Revisamos que
+            if (tdu.includes(nombre)) {  //Revisamos que no este en uso la cedula
+                toast.error('LA NOMBRE YA ESTA EN USO')
+            } else {
+                setOpen(false)
+                await insertar(valoresSeleccionados)
+                reiniciarFormulario()
+                obtenerDatos()
+                toast.success('Tipo de usuario guardado')
+            }
+        } else {
+            toast.error('INGRESA UN NOMBRE')
+        }
+    }
+
     return (
         <div>
             <Button style={{ backgroundColor: "#0048FF", color: "white" }} onClick={() => setOpen(true)}>Agregar</Button>
@@ -100,14 +118,16 @@ export default function Agregar({obtenerDatos}) {
 
                 <DialogActions className='align-middle'>
                     <Button className='bg-success text-white' onClick={async () => {
-                        setOpen(false)
-                        await insertar(valoresSeleccionados)
-                        obtenerDatos()
-                        reiniciarFormulario()
+                        insertarTDU()
                     }} >Guardar</Button>
 
                 </DialogActions>
+
             </Dialog>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
         </div>
     )
 }

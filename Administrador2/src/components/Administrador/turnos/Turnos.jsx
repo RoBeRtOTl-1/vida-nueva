@@ -3,6 +3,7 @@ import Estado from "../estados/Estados";
 import { DatosBD_Turnos } from "../../firebase/Turnos/TURN_CRUD";
 import { ts_to_HM } from "../../firebase/Fechas/Fechas";
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
 
 
 export default function Turnos() {
@@ -78,18 +79,7 @@ export default function Turnos() {
                                         tbody: ' ',
                                     }}
 
-                                    language={{
-                                        'search': {
-                                            'placeholder': 'Abreviatura',
-
-                                        },
-                                        'pagination': {
-                                            'previous': 'Anterior',
-                                            'next': 'Siguiente',
-                                            'showing': 'Mostrando',
-                                            'results': () => 'Registros'
-                                        }
-                                    }}
+                                    language={esES}
                                 />
 
                             )}

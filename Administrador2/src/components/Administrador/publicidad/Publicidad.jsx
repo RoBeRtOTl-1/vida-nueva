@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
+
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
+
 import Agregar from "./Agregar";
 import Modificar from "./Modificar";
+import Estado from "../estados/Estados";
+
 import { get_BD_Publicidad } from "../../firebase/Publicidad/PUB_CRUD";
 import { formatearFechaHora } from "../../firebase/Fechas/Fechas";
-import Estado from "../estados/Estados";
 
 export default function Publicidad() {
     const [datos, setDatos] = useState([]);
@@ -72,18 +76,7 @@ export default function Publicidad() {
                                         tbody: ' ',
                                     }}
 
-                                    language={{
-                                        'search': {
-                                            'placeholder': 'Buscar',
-
-                                        },
-                                        'pagination': {
-                                            'previous': 'Anterior',
-                                            'next': 'Siguiente',
-                                            'showing': 'Mostrando',
-                                            'results': () => 'Registros'
-                                        }
-                                    }}
+                                    language={esES}
                                 />
                             )
                         }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Filler } from "chart.js";
 
 
@@ -11,6 +11,7 @@ import {
 } from 'chart.js'
 
 import { Line } from "react-chartjs-2";
+import { BD_Turnos_Principal } from "../../firebase/Turnos/TURN_CRUD";
 ChartJS.defaults.color = 'white';
 ChartJS.register(Filler);
 
@@ -22,16 +23,26 @@ ChartJS.register(
 )
 
 export default function BarChart() {
+
+  const [turnos, setTurnos] = useState([])
+
+  const obtenerTActuales = async () =>{
+    await setTurnos( await BD_Turnos_Principal() )
+  }
+  useEffect(()=>{
+    obtenerTActuales()
+  }, [])
+
   const data = {
     labels: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'],
     datasets: [
       {
         label: 'Turnos',
-        data: [15, 29, 31, 2, 13, 29, 16, 2, 13],
+        data: turnos,
         backgroundColor: 'white',
         borderColor: 'white',
         pointBorderColor: 'white',
-        tension: .25,
+        tension: .15,
         color: "black",
         fill: {
           target: 'origin',
@@ -50,7 +61,8 @@ export default function BarChart() {
     },
     scales: {
       y: {
-        display: false
+        display: false,
+        beginAtZero: true
       },
 
     }

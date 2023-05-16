@@ -6,11 +6,10 @@ import { collection, addDoc, getDocs, setDoc, doc, where, query, updateDoc, orde
 /**
  * Inserta una cita en firebase con 
  */
-export function insertarCita(datos) {
-    console.log(ts_to_date(datos.DATEINICIO))
-    console.log(ts_to_date(datos.DATEFIN))
+export async function insertarCita(datos) {
+
     try {
-        const tiposDU = addDoc(collection(db, 'CITAS'), {
+        const tiposDU = await addDoc(collection(db, 'CITAS'), {
             'ID_PACIENTES': datos.ID_PACIENTE,
             'ID_USUARIO': datos.ID_USUARIO,
             'ID_ESTADOS': 7,
@@ -18,7 +17,6 @@ export function insertarCita(datos) {
             'DATEFIN': datos.DATEFIN
 
         });
-        alert("NUEVA CITA INSERTADA")
     } catch (error) {
         alert("OCURRIO UN ERROR - INSERTAR:"
             + "\n" + error)
@@ -26,8 +24,11 @@ export function insertarCita(datos) {
 }
 
 export async function get_Citas_BD() {
-    const querySnapshot = await getDocs(collection(db, "CITAS"));
     const datos = [];
+    const citasRef = collection(db, "CITAS")
+    const q = query(citasRef, where('ID_ESTADOS', 'in',[5,3,7]))
+    const querySnapshot = await getDocs(q);
+
     querySnapshot.forEach((doc) => {
         let list_Data = doc.data()
         list_Data['ID'] = doc.id
@@ -61,7 +62,8 @@ export async function get_Citas_Filtradas_BD(ID_USUARIO) {
                 id: doc.id,
                 title: "Reservada",
                 start: ts_to_date(list_Data.DATEINICIO),
-                end: ts_to_date(list_Data.DATEFIN)
+                end: ts_to_date(list_Data.DATEFIN),
+                
             }
             datos.push(cita);
         }
@@ -72,11 +74,15 @@ export async function get_Citas_Filtradas_BD(ID_USUARIO) {
 }
 
 
-export async function actualizarCita(id, datos) {
-    // Add a new document in collection "cities"
-    await setDoc(doc(db, "ESPECIALIDADES", id), {
-        "ESPECIALIDAD": datos.nombre,
-        "ID_ESTADOS": parseInt(datos.estado),
+export async function actualizarCita(id, estado) { 
+    await updateDoc(doc(db, "CITAS", id), {
+        "ID_ESTADOS": parseInt(estado),
     });
-    alert("ESPECIALIDADES ACTUALIZADA")
 }
+
+
+// export async function actualizarCita(id) {
+//     await updateDoc(doc(db, "CITAS", id), {
+//         "ID_ESTADOS": datos
+//     });
+// }

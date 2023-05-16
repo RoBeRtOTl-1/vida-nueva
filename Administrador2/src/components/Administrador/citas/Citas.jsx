@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { get_Citas_BD } from "../../firebase/Citas/CIT_CRUD";
 import Estado from "../estados/Estados";
 import Agregar from "./Agregar";
 import Modificar from "./Modificar";
+
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
+
+import { get_Citas_BD } from "../../firebase/Citas/CIT_CRUD";
 import { formatearFechaHora } from "../../firebase/Fechas/Fechas";
 import { DatoDeLaBD as DatoBD_USU } from "../../firebase/Ususarios/USU_CRUD";
+import { DatoDeLaBD as DatoDB_ESP } from '../../firebase/Especialides/ESP_CRUD.js';
 
 export default function Citas() {
     const [dataCitas, setDataCitas] = useState([]);
@@ -19,8 +23,11 @@ export default function Citas() {
         const datosBD = await get_Citas_BD();
         setDataCitas(datosBD);
 
+        const esp = await DatoDB_ESP();
+        const mapa = new Map(esp.map(dato => [dato.ID, dato.ESPECIALIDAD]));
+
         const usu = await DatoBD_USU();
-        const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO]));
+        const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO + ' - ' + mapa.get(dato.ID_ESPECIALIDAD)]));
         setUsuarios(map)
         
         setIsLoading(false);
@@ -45,7 +52,7 @@ export default function Citas() {
                         <h3>Gestión de citas</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar />
+                        <Agregar obtenerDatos={obtenerDatos} />
                     </div>
                 </div>
 
@@ -64,8 +71,15 @@ export default function Citas() {
                                     usuarios.get(cita.ID_USUARIO),
                                     cita.ID_PACIENTE,
                                     formatearFechaHora(cita.DATEINICIO),
+                                    
                                     _(<Estado estado={cita.ID_ESTADOS} />),
-                                    _(<Modificar dato={cita} obtenerDatos={obtenerDatos}/>)
+
+                                    cita.ID_ESTADOS != 7 ?
+                                    _(<Modificar 
+                                        dato={cita} 
+                                        medico={usuarios.get(cita.ID_USUARIO)} 
+                                        obtenerDatos={obtenerDatos}
+                                    />) : ''
                                 ])}
 
                                 columns={[
@@ -87,18 +101,7 @@ export default function Citas() {
                                     tbody: ' ',
                                 }}
 
-                                language={{
-                                    'search': {
-                                        'placeholder': 'Nombre del medico',
-
-                                    },
-                                    'pagination': {
-                                        'previous': 'Anterior',
-                                        'next': 'Siguiente',
-                                        'showing': 'Mostrando',
-                                        'results': () => 'Registros'
-                                    }
-                                }}
+                                language={esES}
                             />
 
                         )}

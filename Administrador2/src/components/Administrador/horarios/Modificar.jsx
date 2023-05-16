@@ -33,9 +33,6 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
         <div>
             <Button onClick={() => {
                 setOpen(true)
-                console.log(med_nombre)
-                console.log(dato)
-                console.log(obtenerDatos)
             }}>
                 <img
                     src="src/css/img/acciones/Modificar.png"
@@ -70,7 +67,16 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
                             <div className="col-md-6">
                                 <Stack spacing={100}>
                                     <Stack direction="row" spacing={2}>
-                                        <TextField label="Medico" variant="standard" disabled value={med_nombre} r size='small' onChange={(e) => setNombre(e.target.value)} />
+                                        <TextField
+                                            label="Medico"
+                                            variant="standard"
+                                            
+                                            value={med_nombre}
+                                                
+                                            InputProps={{
+                                                readOnly: true,
+                                              }}
+                                        />
                                     </Stack>
                                 </Stack>
                             </div>
@@ -105,7 +111,7 @@ export default function Modificar({ med_nombre, dato, obtenerDatos }) {
                         setOpen(false)
                         actualizarHorario(dato.ID, datosHorario)
                         obtenerDatos()
-                        toast.success('Horario modificado') 
+                        toast.success('Horario modificado')
                     }} >Modificar</Button>
 
                 </DialogActions>

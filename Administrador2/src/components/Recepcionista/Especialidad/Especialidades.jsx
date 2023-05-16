@@ -11,7 +11,6 @@ const Especialidades = () => {
     async function obtenerDatos() {
         setEspecialidades([])
         const datosBD = await DatoDeLaBDActivos();
-        console.log(datosBD)
         setEspecialidades(datosBD);
 
         //setIsLoading(false);
@@ -21,8 +20,6 @@ const Especialidades = () => {
         obtenerDatos();
     }, []);
     
-
-
     return (
         <div>
             <Header/>
@@ -35,7 +32,7 @@ const Especialidades = () => {
                     </div>
                     <div>
                        <div className="row justify-content-center mt-5 ">
-                          {especialidades.map((especialidad) => (
+                          {especialidades.map((especialidad, index) => (
                               <div className="col-3">
                                 <AgregarCitaEspecialidad especialidad={especialidad.ESPECIALIDAD} id={especialidad.ID}/>
                               </div>

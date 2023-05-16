@@ -1,7 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 
 const DIAS = [
-    'Dmingo',
+    'Domingo',
     'Lunes',
     'Martes',
     'Miércoles',

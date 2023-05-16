@@ -6,7 +6,7 @@ import { formatearHorario } from "../../firebase/Fechas/Fechas";
 import { DatoDeLaBD as DatoBD_USU } from "../../firebase/Ususarios/USU_CRUD";
 
 import { _, Grid } from 'gridjs-react';
-
+import { esES } from "gridjs/l10n";
 
 export default function Horarios() {
     const [datos, setDatos] = useState([]);
@@ -87,18 +87,7 @@ export default function Horarios() {
                                     tbody: ' ',
                                 }}
 
-                                language={{
-                                    'search': {
-                                        'placeholder': 'Nombre del medico',
-
-                                    },
-                                    'pagination': {
-                                        'previous': 'Anterior',
-                                        'next': 'Siguiente',
-                                        'showing': 'Mostrando',
-                                        'results': () => 'Registros'
-                                    }
-                                }}
+                                language={esES}
                             />
                         )}
                     </div>

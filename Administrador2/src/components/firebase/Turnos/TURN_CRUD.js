@@ -33,41 +33,6 @@ export async function datosNuevoTurno(id) {
 }
 
 
-
-// export async function DatosBD_Turnos() {
-//     const turnosRef = collection(db, "TURNOS");
-//     const q = query(turnosRef, 
-//         orderBy("FECHAHORA"),
-//         where ('ID_ESTADOS', 'in', ['4','6']));
-//     const querySnapshot = await getDocs(q);
-//     const datos = [];
-
-//     querySnapshot.forEach((doc) => {
-//         let list_Data = doc.data()
-//         list_Data['ID'] = doc.id
-//         datos.push(list_Data);
-//     });
-//     console.log(datos)
-//     return datos;
-// }
-
-
-// export async function DatosBD_Turnos() {
-//     const turnosRef = collection(db, "TURNOS");
-//     const q = query(turnosRef, 
-//         where ('ID_ESTADOS', 'in', [4,6]),
-//         orderBy("FECHAHORA"));
-//     const querySnapshot = await getDocs(q);
-//     const datos = [];
-
-//     querySnapshot.forEach((doc) => {
-//         let list_Data = doc.data()
-//         list_Data['ID'] = doc.id
-//         datos.push(list_Data);
-//     });
-//     return datos;
-// }
-
 export async function BD_Turnos_Actuales() {
     const datos = [];
     const llamado = []
@@ -128,7 +93,7 @@ export async function DatosBD_Turnos() {
     /* Apuntamos a la coleccion */
     const turnosRef = collection(db, "TURNOS")
     /* Ordenamos la consulta */
-    const q = query(turnosRef, orderBy("FECHAHORA"));
+    const q = query(turnosRef, orderBy("FECHAHORA", "desc"));
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
@@ -153,15 +118,6 @@ export async function DatosBD_Turnos() {
 
     });
     return datos
-    // const querySnapshot = await getDocs(collection(db, "TURNOS"), orderBy("FECHAHORA"));
-    // const datos = [];
-    // querySnapshot.forEach((doc) => {
-    //     let list_Data = doc.data()
-    //     list_Data['ID'] = doc.id
-    //     datos.push(list_Data);
-    // });
-
-    // return datos;
 }
 
 export async function BD_Turnos_Estadisticas(DATE_INICIO, DATE_FIN) {
@@ -238,7 +194,7 @@ export async function BD_Turnos_Estadisticas(DATE_INICIO, DATE_FIN) {
             // let doc_month = docDate.getMonth()
             // let doc_day = docDate.getDate()
 
-            if ( DATE_INICIO <= docDate && docDate <= DATE_FIN) {
+            if (DATE_INICIO <= docDate && docDate <= DATE_FIN) {
                 if (id_s == 'CM') {
                     if (id_e == 3) {
                         datos[0].TOTAL += 1
@@ -313,6 +269,58 @@ export async function BD_Turnos_Estadisticas(DATE_INICIO, DATE_FIN) {
         });
     }
     return datos
+}
+
+export async function BD_Turnos_Principal() {
+
+    const datos = {
+        8: 0,
+        9: 0,
+        10: 0,
+        11: 0,
+        12: 0,
+        13: 0,
+        14: 0,
+        15: 0,
+        16: 0,
+        17: 0,
+        18: 0,
+        19: 0,
+        20: 0
+    };
+
+    const fecha = new Date()
+    const currentDate = {
+        year: fecha.getFullYear(),
+        month: fecha.getMonth(),
+        day: fecha.getDate()
+    }
+
+    /* Apuntamos a la coleccion */
+    const turnosRef = collection(db, "TURNOS")
+    const q = query(turnosRef, orderBy("FECHAHORA"));
+
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+        /* Obtenemos la fecha del turno */
+        let docDate = ts_to_date(doc.data().FECHAHORA)
+        let year = docDate.getFullYear()
+        let month = docDate.getMonth()
+        let day = docDate.getDate()
+
+        if (currentDate.day == day &&
+            currentDate.month && month &&
+            currentDate.year && year) {
+
+            let hora = docDate.getHours()
+            let minute = docDate.getMinutes()
+
+            datos[hora] += 1
+
+            //console.log(doc.data())
+        }
+    });
+    return Object.values(datos)
 }
 
 

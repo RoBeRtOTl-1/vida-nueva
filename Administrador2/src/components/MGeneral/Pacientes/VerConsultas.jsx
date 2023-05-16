@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { Toaster, toast } from "react-hot-toast"
 import { _, Grid } from 'gridjs-react';
+import { esES } from "gridjs/l10n";
 
 import { useState, useEffect } from 'react'
 import { formatearFechaHora, ts_to_HM, ts_to_date } from '../../firebase/Fechas/Fechas.js';
@@ -18,8 +19,6 @@ import { DatoDeLaBD as DatoDB_ESP } from '../../firebase/Especialides/ESP_CRUD.j
 import Visualizar from './Visualizar.jsx';
 import { Document, Page, PDFDownloadLink, Text, View, StyleSheet } from '@react-pdf/renderer'
 import VisualizarPDF from './VisualizarPDF.jsx';
-
-
 
 
 
@@ -33,6 +32,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
         setData([])
         const registro = await get_Expendientes_Paciente(ID_PACIENTE)
         setData(registro)
+        
         const esp = await DatoDB_ESP();
         const mapa = new Map(esp.map(dato => [dato.ID, dato.ESPECIALIDAD]));
         const usu = await DatoBD_USU();
@@ -110,7 +110,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                             width={"100%"}
                             columns={[
                                 {
-                                    name: 'Medicox  ',
+                                    name: 'Medico',
                                     width: "20%"
                                 },
                                 
@@ -150,18 +150,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                                 tbody: ' ',
                             }}
 
-                            language={{
-                                'search': {
-                                    'placeholder': 'Buscar',
-
-                                },
-                                'pagination': {
-                                    'previous': 'Anterior',
-                                    'next': 'Siguiente',
-                                    'showing': 'Mostrando',
-                                    'results': () => 'Registros'
-                                }
-                            }}
+                            language={esES}
                         />
 
 

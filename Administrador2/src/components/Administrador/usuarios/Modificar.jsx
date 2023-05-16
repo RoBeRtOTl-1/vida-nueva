@@ -72,9 +72,7 @@ export default function Modificar({ dato, obtenerDatos }) {
 
     useEffect(() => {
         obtenerEspecialidades()
-        obtenerRoles()
-        console.log(datosPer)
-        
+        obtenerRoles()        
     }, []);
 
     async function obtenerEspecialidades() {

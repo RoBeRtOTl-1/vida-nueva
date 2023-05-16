@@ -19,7 +19,7 @@ export default function SigTurno() {
     useEffect(() => {
         BD_Turnos_Actuales().then((data) => {
             socket.emit("DatosActuales", data);
-          })
+        })
 
         socket.on("setNextTurno", (nuevturno) => {
             if (nuevturno) {
@@ -56,20 +56,63 @@ export default function SigTurno() {
 
     }
     return (
-        <div className="rounded-4 pt-3 mt-5 border-gray shadow-custom h-100"
-            style={{ width: "1250px" }}>
-            <Button disabled={btn1} onClick={avanzarTurno}>Avanzar turno</Button>
 
-            <p>Turno llamado: {turno ? turno.ID_TURNO : null}</p>
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px" }} >
+            <div className="container-fluid mt-4 d-flex justify-content-evenly" >
+                <div className="col-12" >
 
-            <Button disabled={btn2} onClick={() => hanndleTurno(3)}>Atendido</Button>
+                    <div className="row justify-content-evenly">
+                        <div className="col-5">
 
-            <Button disabled={btn3} onClick={() => hanndleTurno(5)}>Cancelado</Button>
+                            <Button disabled={btn1}
+                                onClick={avanzarTurno}
+                                className=""
+                                color="secondary"
+                                style={{ fontSize: '20px' }}
+                                variant="contained"
+                            >
+                                <img src="\src\css\img\Medico\Turnos\Bocina.png" style={{ width: "15%" }} />
+                                &nbsp; Avanzar turno
+                            </Button>
+                        </div>
+                    </div>
 
-            <Button disabled={btn4} >Volver a llamar</Button>
+
+                    <div className="row justify-content-evenly">
+                        <div className=" col-sm-5 bg-success h-50 mt-5">
+                            <p>Turno llamado: {turno ? turno.ID_TURNO : null}</p>
+                        </div>
+                    </div>
+
+                    <div className="row ">
+                        <div className="col-12 d-flex  mt-5 justify-content-center">
+
+                            <Button
+                                disabled={btn2}
+                                onClick={() => hanndleTurno(3)}
+                                color="success"
+                                variant="contained"
+                            >
+                                Atendido
+                            </Button>
+
+                            <Button
+                                disabled={btn3}
+                                onClick={() => hanndleTurno(5)}
+                                variant="contained"
+                                color="error"
+                            >
+                                Cancelado
+                            </Button>
+                            <Button disabled={btn4} >Volver a llamar</Button>
+                        </div>
+                    </div>
+
+                </div>
 
 
-
+            </div>
         </div>
+
     );
 }

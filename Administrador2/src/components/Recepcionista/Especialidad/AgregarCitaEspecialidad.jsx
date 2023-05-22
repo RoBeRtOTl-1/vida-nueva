@@ -12,7 +12,8 @@ import {
     Select,
     TextField,
     Stack,
-    Divider
+    Divider,
+    Box
 } from "@mui/material";
 
 import FullCalendar from '@fullcalendar/react';
@@ -26,18 +27,27 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatoDeLaBDFiltrado } from '../../firebase/Ususarios/USU_CRUD';
 import { get_Horario_Medico_BD } from '../../firebase/Horarios/HOR_CRUD';
-import { get_Citas_Filtradas_BD, insertarCita } from '../../firebase/Citas/CIT_CRUD';
-import { date_to_ts, ts_to_date } from '../../firebase/Fechas/Fechas';
+import { actualizarCita, get_Citas_Filtradas_BD, insertarCita } from '../../firebase/Citas/CIT_CRUD';
+import { date_to_ts, formatearFechaHora, ts_to_date } from '../../firebase/Fechas/Fechas';
 import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD';
-import { get_Pacientes_Filtrado_BD } from '../../firebase/Pacientes/PAC_CRUD';
+import { get_Pacientes_BD, get_Pacientes_Filtrado_BD, insertarPaciente } from '../../firebase/Pacientes/PAC_CRUD';
 import { Toaster, toast } from "react-hot-toast"
 import dayjs from 'dayjs';
+import CancelarCitaEspecialidad from './modales/CancelarCitaEspecialidad';
+import { insertarDom } from '../../firebase/Domicilio/Dom_CRUD';
 
 
 const AgregarCitaEspecialidad = ({ especialidad, id }) => {
     //Open y Open2 para controlar cuando se muestran los modales
     const [open, setOpen] = useState(false);
     const [open2, setOpen2] = useState(false);
+    const [open3, setOpen3] = useState(false);
+    const [openCancel, setOpenCancel] = useState(false);
+    const [select, setSelect] = useState()
+
+    const [medAct, setMedAct] = useState()
+    const [pac, setPac] = useState()
+    const [curps, setCurps] = useState()
 
     //Usamos el useRef para apuntar al calendario
     const calendarRef = useRef(null);
@@ -102,16 +112,55 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
 
     const [tiposSangre, setTiposSangre] = useState(TIPOS_DE_SANGRE());
 
-    const insertDate = async () => {
-        setOpen2(false)
-        await insertarCita(cita)
-        //resetMedicos()
-        resetCita()
-        resetDatosDom()
-        resetDatosPer()
-        resetCurrentSlots()
-        resetSlots()
-        toast.success('Cita agendada')
+    const insertDate = async (evt) => {
+        evt.preventDefault();
+        //Se busco por curp?        
+        if (cita.ID_PACIENTE) {
+            setOpen2(false)
+            await insertarCita(cita)
+            //resetMedicos()
+            resetCita()
+            resetDatosDom()
+            resetDatosPer()
+            resetCurrentSlots()
+            resetSlots()
+            toast.success('Cita agendada')
+        } else { //No se busco por cup
+            
+            //Revisamos que la CURP no este siendo usada
+            if (curps.includes(datosPer.CURP)) {
+                toast.error('La CURP ya esta en uso')
+            } else {
+                //Insertamos al paciente
+                const ID_DOM = await insertarDom(datosDom);
+                datosPer["ID_DOMICILIO"] = ID_DOM;
+                const ID_USU = await insertarPaciente(datosPer)
+                cita.ID_PACIENTE = ID_USU
+
+                setOpen2(false)
+                await insertarCita(cita)
+                //resetMedicos()
+                resetCita()
+                resetDatosDom()
+                resetDatosPer()
+                resetCurrentSlots()
+                resetSlots()
+                toast.success('Cita agendada')
+            }
+        }
+
+        //No buscado por curp por curp
+
+        //setOpen2(false)
+        //console.log(curps.includes(datosPer.CURP))
+        // await insertarCita(cita)
+        // //resetMedicos()
+        // resetCita()
+        // resetDatosDom()
+        // resetDatosPer()
+        // resetCurrentSlots()
+        // resetSlots()
+        // toast.success('Cita agendada')
     }
 
     function handleDatosPersonales(event) {
@@ -129,10 +178,21 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
 
     useEffect(() => {
         obtenerMedicos()
+        obtenerPac()
     }, [])
 
+    const obtenerPac = async () => {
+        const pacientes = await get_Pacientes_BD()
+        setCurps([])
+        setPac(await new Map(pacientes.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+        const c = await (pacientes.map(pac => pac.CURP))
+        setCurps(c)
+    }
     const obtenerMedicos = async () => {
-        setMedicos(await DatoDeLaBDFiltrado(id))
+        const med = await DatoDeLaBDFiltrado(id);
+        setMedicos(med)
+        setMedAct(await new Map(med.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+
     }
 
     const hanndleMedico = async (evt) => {
@@ -146,7 +206,6 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
     const hanndNuevaCita = async (selected) => {
         cita.DATEINICIO = date_to_ts(selected.start)
         cita.DATEFIN = date_to_ts(selected.end)
-        console.log(cita)
     }
 
     function handleDate(newValue) {
@@ -165,16 +224,45 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
             setDatosPer(data[0])
             setDatosDom(data[1])
             cita.ID_PACIENTE = data[0].ID
-            console.log(cita)
+
 
         }).catch((e) => {
             console.log('error')
             toast.error('Paciente no encontrado')
         })
+    }
 
+    const handleEventClick = (selected) => {
+        setSelect(selected)
+        console.log(select.event)
+        setOpen3(true)
+        // if (
+        //     window.confirm(
+        //         `Are you sure you want to delete the event '${selected.event}'`
+        //     )
+        // ) {
+        //     selected.event.remove();
+        // }
+    };
+
+    const cancelarCita = async () => {
+        await actualizarCita(select.event.id, '5')
+        setOpenCancel(false)
+        setOpen3(false)
+        setOpen(false)
+        reiniciarFormulario()
+        toast.success('Cita cancelada')
 
     }
 
+    const reiniciarFormulario = () => {
+        resetCita()
+        resetDatosDom()
+        resetDatosPer()
+        resetCurrentSlots()
+        resetSlots()
+        cita.ID_PACIENTE=''
+    }
     return (
         <div>
             <Button className="bg-light border border-dark-subtle rounded-4 text-black shadow  mb-5 bg-body-tertiary rounded"
@@ -303,7 +391,7 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                             } //
                                             dayMaxEvents={true}
 
-                                            Evento para crear una cita
+                                            //Evento para crear una cita
                                             select={(selected) => {
                                                 hanndNuevaCita(selected)
                                                 setOpen(false)
@@ -312,8 +400,9 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
 
 
                                             weekends={false}
+
                                             //Evento para eliminar un evento
-                                            //eventClick={handleEventClick}
+                                            eventClick={async (selected) => { await handleEventClick(selected) }}
 
                                             //eventsSet={(events) => setCurrentEvents(events)}
 
@@ -343,16 +432,170 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                         maxWidth: '1000px',
                     },
                 }}>
+                <Box
+                    component='form'
+                    onSubmit={insertDate}
+                >
+                    <DialogTitle id='dialog-title'>
+                        <div className='row'>
+                            <div className='col-11'>
+                                Datos personales
+                            </div>
+                            <div className='col-1'>
+                                <Button onClick={() => {
+                                    setOpen2(false)
+                                }}
+                                >
+                                    X
+                                </Button>
+                            </div>
+                        </div>
+
+
+                        <Divider className='bg-black' />
+                    </DialogTitle>
+
+
+                    <DialogContent>
+                        <DialogContentText className='mt-2' id='dialog-description'>
+                            <Stack spacing={3}>
+                                <Stack direction="row" spacing={2}>
+                                    <TextField
+                                        label="Nombre"
+                                        size="small"
+                                        name="NOMBRE"
+                                        required
+                                        value={datosPer.NOMBRE}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                    />
+                                    <TextField
+                                        label="Apellido paterno"
+                                        name="AP_PATERNO"
+                                        required
+                                        size="small"
+                                        value={datosPer.AP_PATERNO} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField
+                                        label="Apellido materno"
+                                        name="AP_MATERNO"
+                                        required
+                                        size="small"
+                                        value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
+
+                                    <TextField required size='small' name="ID_TIP_SANGRE" label="Tipo de sangre" select value={datosPer.ID_TIP_SANGRE} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
+                                        {tiposSangre.map((dato) => (
+                                            <MenuItem value={dato.ID} >{dato.TIPO_SANGRE}</MenuItem>
+                                        ))}
+                                    </TextField>
+                                </Stack>
+
+                                <Stack direction="row" spacing={2}>
+                                    <TextField required type="number" label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField required label="CURP" name="CURP" size="small" value={datosPer.CURP} onChange={(e) => handleDatosPersonales(e)} />
+
+                                    <TextField required size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
+                                        onChange={(e) => handleDatosPersonales(e)}>
+                                        <MenuItem required value="1">Hombre</MenuItem>
+                                        <MenuItem required value="2">Mujer</MenuItem>
+                                    </TextField>
+
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="Fecha de nacimiento"
+                                            value={dayjs(ts_to_date(datosPer.NACIMIENTO))}
+                                        />
+                                    </LocalizationProvider>
+
+
+                                </Stack>
+
+                                <Stack direction="row" spacing={2}>
+                                    <TextField required label="Email" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField required label="Alergias" size="small" multiline name="ALERGIAS" value={datosPer.ALERGIAS} onChange={(e) => handleDatosPersonales(e)} />
+
+                                </Stack>
+
+                                <h5 style={{ color: "black" }}>Domicilio</h5>
+                                <hr />
+                                <Stack direction="row" spacing={2}>
+                                    <TextField required label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField required label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField required type="number" label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField required label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
+                                </Stack>
+
+                                <Stack direction="row" spacing={2}>
+                                    <TextField type="number" required label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField type="number" label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
+                                </Stack>
+
+                            </Stack>
+                        </DialogContentText>
+                    </DialogContent>
+
+
+                    <DialogActions className='justify-content-between'>
+
+                        <Button
+                            variant='text'
+                            color='error'
+                            onClick={() => {
+                                setOpen(true)
+                                setOpen2(false)
+                            }}
+                        >
+                            <i class="bi bi-arrow-left"></i>
+                        </Button>
+
+                        <Button
+                            variant='outlined'
+
+                            onClick={async () => {
+                                reiniciarFormulario()
+                            }}
+                        >
+                            Borrar
+                        </Button>
+
+                        <Button
+                            variant='outlined'
+
+                            onClick={async () => {
+                                buscarPorCurp()
+                            }}
+                        >
+                            <i class="bi bi-search"></i> &nbsp; Busar por curp
+                        </Button>
+
+                        <Button
+                            className='bg-success text-white'
+                            type='submit'
+                        >
+                            Guardar
+                        </Button>
+
+                    </DialogActions>
+                </Box>
+            </Dialog>
+
+            <Dialog
+                open={open3}
+                onClose={() => setOpen3(false)}
+                aria-labelledby='dialog-title'
+                aria-describedby='dialog-description'
+                PaperProps={{
+                    style: {
+                        maxWidth: '1000px',
+                    },
+                }}>
 
                 <DialogTitle id='dialog-title'>
                     <div className='row'>
                         <div className='col-11'>
-                            Datos personales
+                            Datos de cita
                         </div>
                         <div className='col-1'>
                             <Button onClick={() => {
-                                setOpen2(false)
-                                reiniciarFormulario()
+                                setOpen3(false)
                             }}
                             >
                                 X
@@ -367,113 +610,84 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                 <DialogContent>
 
                     <DialogContentText className='mt-2' id='dialog-description'>
-                        <Stack spacing={3}>
-                            <Stack direction="row" spacing={2}>
-                                <TextField
-                                    label="Nombre"
-                                    size="small"
-                                    name="NOMBRE"
+                        <DialogContentText className='' id='dialog-description'>
+                            <div className="row text-center text-black">
+                                <div className="col-12">
+                                    <h1>Clínica Vida Nueva</h1>
+                                </div>
+                                <div className="col-12 ">
+                                    <h6>Medico:</h6>
+                                </div>
+                                <div className="col-12 ">
+                                    <h2>{select ? medAct.get(select.event.extendedProps.data.ID_USUARIO) : ''}</h2>
+                                </div>
+                                <div className="col-12 ">
+                                    <h6>Paciente:</h6>
+                                </div>
+                                <div className="col-12 ">
+                                    <h2>{select ? pac.get(select.event.extendedProps.data.ID_PACIENTES) : ''}</h2>
+                                </div>
+                                <div className="col-12 ">
+                                    <h6>Fecha:</h6>
+                                </div>
+                                <div className="col-12 ">
+                                    <h2>{select ? formatearFechaHora(date_to_ts(select.event.start)) : 'ño'}</h2>
+                                </div>
+                            </div>
 
-                                    value={datosPer.NOMBRE}
-                                    onChange={(e) => handleDatosPersonales(e)}
-                                />
-                                <TextField
-                                    label="Apellido paterno"
-                                    name="AP_PATERNO"
-                                    size="small"
-                                    value={datosPer.AP_PATERNO} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField
-                                    label="Apellido materno"
-                                    name="AP_MATERNO"
-                                    size="small"
-                                    value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
-
-                                <TextField size='small' name="ID_TIP_SANGRE" label="Tipo de sangre" select value={datosPer.ID_TIP_SANGRE} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
-                                    {tiposSangre.map((dato) => (
-                                        <MenuItem value={dato.ID} >{dato.TIPO_SANGRE}</MenuItem>
-                                    ))}
-                                </TextField>
-                            </Stack>
-
-                            <Stack direction="row" spacing={2}>
-                                <TextField type="number" label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="CURP" name="CURP" size="small" value={datosPer.CURP} onChange={(e) => handleDatosPersonales(e)} />
-
-                                <TextField size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
-                                    onChange={(e) => handleDatosPersonales(e)}>
-                                    <MenuItem value="1">Hombre</MenuItem>
-                                    <MenuItem value="2">Mujer</MenuItem>
-                                </TextField>
-
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DatePicker label="Fecha de nacimiento"
-                                        defaultValue={dayjs(ts_to_date(datosPer.NACIMIENTO))}
-                                    />
-                                </LocalizationProvider>
-
-
-                            </Stack>
-
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Email" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="Alergias" size="small" multiline name="ALERGIAS" value={datosPer.ALERGIAS} onChange={(e) => handleDatosPersonales(e)} />
-
-                            </Stack>
-
-                            <h5 style={{ color: "black" }}>Domicilio</h5>
-                            <hr />
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField type="number" label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
-                            </Stack>
-
-                            <Stack direction="row" spacing={2}>
-                                <TextField type="number" label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField type="number" label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                            </Stack>
-
-                        </Stack>
+                        </DialogContentText>
                     </DialogContentText>
                 </DialogContent>
 
-                <DialogActions className='justify-content-between'>
+                <DialogActions className='d-flex justify-content-end'>
 
                     <Button
-                        variant='text'
-                        color='error'
-                        onClick={() => {
-                            setOpen(true)
-                            setOpen2(false)
-                        }}
-                    >
-                        <i class="bi bi-arrow-left"></i>
-                    </Button>
-
-                    <Button
-                        variant='outlined'
-
+                        className='bg-danger text-white bg-opacity-50 '
                         onClick={async () => {
-                            buscarPorCurp()
+                            setOpenCancel(true)
                         }}
                     >
-                        <i class="bi bi-search"></i> &nbsp; Busar por curp
-                    </Button>
-
-                    <Button
-                        className='bg-success text-white'
-                        onClick={async () => {
-                            insertDate()
-                            //await insertarPACyDOM()
-                            //obtenerDatos()
-                        }}
-                    >
-                        Guardar
+                        X
                     </Button>
 
                 </DialogActions>
             </Dialog>
+
+            <Dialog
+                open={openCancel}
+                onClose={() => setOpenCancel(false)}
+                aria-labelledby='dialog-title'
+                aria-describedby='dialog-description'
+                PaperProps={{
+                    style: {
+                        maxWidth: '1000px',
+                    },
+                }}>
+                <DialogTitle>Confirmar</DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <div>
+                                ¿Esta seguro que desea cancelar la cita?
+                            </div>
+                        </Grid>
+                    </Grid>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <Button onClick={() => {
+                                setOpenCancel(false)
+                                setOpen3(false)
+                            }} >Cancelar</Button>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Button onClick={async () => {
+                                cancelarCita()
+                            }}>Confirmar</Button>
+                        </Grid>
+                    </Grid>
+                </DialogContent >
+            </Dialog>
+
             <Toaster
                 position="top-right"
                 reverseOrder={true}

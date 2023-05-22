@@ -354,7 +354,7 @@ export default function Agregar(props) {
 // const handleEventClick = (selected) => {
 //     if (
 //         window.confirm(
-//             `Are you sure you want to delete the event '${selected.event.id}'`
+//             `Are you sure you want to delete the event '${selected.event}'`
 //         )
 //     ) {
 //         selected.event.remove();

@@ -47,7 +47,6 @@ export function formatearHorario(cadena) {
 
 export function ts_to_HM(timestamp) {
     const fecha = ts_to_date(timestamp)
-    console.log(ts_to_date(timestamp))
 
     const horas = String(fecha.getHours()).padStart(2, '0'); // Obtiene las horas en formato de 24h y asegura que tenga dos dígitos
     const minutos = String(fecha.getMinutes()).padStart(2, '0'); // Obtiene los minutos y asegura que tenga dos dígitos

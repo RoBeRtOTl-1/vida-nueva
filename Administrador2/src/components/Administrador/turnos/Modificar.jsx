@@ -10,26 +10,24 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { Stack, TextField } from '@mui/material'
-import { actualizarCita } from "../../firebase/Citas/CIT_CRUD"
 import { formatearFechaHora } from '../../firebase/Fechas/Fechas'
 import { Toaster, toast } from "react-hot-toast"
+import { actualizarTurno } from '../../firebase/Turnos/TURN_CRUD'
 
-export default function Modificar({ dato, medico, obtenerDatos }) {
+export default function Modificar({ dato, obtenerDatos }) {
     const [open, setOpen] = useState(false)
-
     const [estado, setEstado] = useState(dato.ID_ESTADOS);
 
 
     function handleChange(event) {
         setEstado(event.target.value)
-
     }
 
     const hanndleCita = async () => {
         setOpen(false)
-        await actualizarCita(dato.ID, estado)
+        await actualizarTurno(dato.ID, estado)
         obtenerDatos()
-        toast.success('Cita modificada') 
+        toast.success('Turno modificado') 
     }
     return (
         <div>
@@ -67,8 +65,8 @@ export default function Modificar({ dato, medico, obtenerDatos }) {
                                 <Stack spacing={100}>
                                     <Stack spacing={100}>
                                         <TextField
-                                            label="Medico"
-                                            value={medico}
+                                            label="Tipo de servicio"
+                                            value="Consulta medica"
                                             size='small'
                                             variant="standard"
                                             InputProps={{
@@ -83,7 +81,7 @@ export default function Modificar({ dato, medico, obtenerDatos }) {
                                     <Stack spacing={2}>
                                         <TextField
                                             label="Fecha y hora"
-                                            value={formatearFechaHora(dato.DATEINICIO)}
+                                            value={formatearFechaHora(dato.FECHAHORA)}
                                             size='small'
                                             variant="standard"
                                             InputProps={{
@@ -93,21 +91,7 @@ export default function Modificar({ dato, medico, obtenerDatos }) {
                                     </Stack>
                                 </Stack>
                             </div>
-                            <div className='col-6 mt-4'>
-                                <Stack spacing={100}>
-                                    <Stack spacing={2}>
-                                        <TextField
-                                            label="Paciente"
-                                            value={formatearFechaHora(dato.DATEFIN)}
-                                            size='small'
-                                            variant="standard"
-                                            InputProps={{
-                                                readOnly: true,
-                                            }}
-                                        />
-                                    </Stack>
-                                </Stack>
-                            </div>
+                           
                             <div className="col-md-6 mt-4">
                                 <TextField
                                     size='small'
@@ -119,8 +103,8 @@ export default function Modificar({ dato, medico, obtenerDatos }) {
                                     onChange={handleChange}
                                     variant="standard"
                                 >
-                                    <MenuItem value="3">Atendido</MenuItem>
-                                    <MenuItem value="5">Cancelado</MenuItem>
+                                    <MenuItem value={3}>Atendido</MenuItem>
+                                    <MenuItem value={5}>Cancelado</MenuItem>
                                 </TextField>
                             </div>
                         </div>

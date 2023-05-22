@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 
 
-const CancelarCitaEspecialidad = ({especialidad,id}) => {
-    const [openCancel, setOpenCancel] = useState(false);
+const CancelarCitaEspecialidad = ({especialidad, id, openModal}) => {
+    const [openCancel, setOpenCancel] = useState(openModal ? openModal : false);
 
     return (
         <div>

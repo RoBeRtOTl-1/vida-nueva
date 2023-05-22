@@ -71,6 +71,8 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                 PaperProps={{
                     style: {
                         maxWidth: '100%',
+                        height: '95%',
+                        maxHeight: '100%'
                     },
                 }}>
 

@@ -62,14 +62,13 @@ export async function get_Citas_Filtradas_BD(ID_USUARIO) {
                 id: doc.id,
                 title: "Reservada",
                 start: ts_to_date(list_Data.DATEINICIO),
-                end: ts_to_date(list_Data.DATEFIN),
-                
+                end: ts_to_date(list_Data.DATEFIN),  
+                data : doc.data()      
             }
             datos.push(cita);
         }
 
     });
-    //console.log(datos)
     return datos;
 }
 

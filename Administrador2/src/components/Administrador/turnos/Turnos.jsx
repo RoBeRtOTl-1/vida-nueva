@@ -4,6 +4,7 @@ import { DatosBD_Turnos } from "../../firebase/Turnos/TURN_CRUD";
 import { ts_to_HM } from "../../firebase/Fechas/Fechas";
 import { _, Grid } from 'gridjs-react';
 import { esES } from "gridjs/l10n";
+import Modificar from "./Modificar";
 
 
 export default function Turnos() {
@@ -22,20 +23,18 @@ export default function Turnos() {
 
     useEffect(() => {
         obtenerDatos();
+        console.log(turnos)
     }, []);
 
     return (
 
-        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px"}} >
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px" }} >
 
             <div className="container-fluid mt-4" >
 
                 <div className="row">
                     <div className="col-6">
                         <h3>Turnos del dia</h3>
-                    </div>
-                    <div className="col-6 text-end">
-                        <button className="btn btn-primary">Agregar</button>
                     </div>
                 </div>
 
@@ -56,7 +55,10 @@ export default function Turnos() {
                                         tipo.ID_TURNO,
                                         tipo.ID_SERVICIO,
                                         ts_to_HM(tipo.FECHAHORA),
-                                        _(<Estado estado={tipo.ID_ESTADOS} />)
+                                        _(<Estado estado={tipo.ID_ESTADOS} />),
+                                        tipo.ID_ESTADOS != 4 ?
+                                            _(<Modificar dato={tipo} obtenerDatos={obtenerDatos} />)
+                                            : ''
 
                                     ])}
 

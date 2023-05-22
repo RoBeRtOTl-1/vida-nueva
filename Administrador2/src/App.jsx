@@ -9,7 +9,7 @@ import Login from "./components/Login/Login"
 import Condicional from "./components/SOCKETS/Condicional"
 import Turnos from "./components/Turnos/Turnos"
 import Asidebar from "./components/Administrador/Asidebar";
-import Especialista from "./components/MEspecialista/Esp"
+import Especialista from "./components/MEspecialista/Principal"
 import General from "./components/MGeneral/Principal"
 import Servicios from "./components/Recepcionista/Servicios/Servicios"
 import Especialidad from "./components/Recepcionista/Especialidad/Especialidades"

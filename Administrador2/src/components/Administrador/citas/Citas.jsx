@@ -10,15 +10,18 @@ import { get_Citas_BD } from "../../firebase/Citas/CIT_CRUD";
 import { formatearFechaHora } from "../../firebase/Fechas/Fechas";
 import { DatoDeLaBD as DatoBD_USU } from "../../firebase/Ususarios/USU_CRUD";
 import { DatoDeLaBD as DatoDB_ESP } from '../../firebase/Especialides/ESP_CRUD.js';
+import { get_Pacientes_BD } from "../../firebase/Pacientes/PAC_CRUD";
 
 export default function Citas() {
     const [dataCitas, setDataCitas] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [usuarios, setUsuarios] = useState(new Map())
+    const [pacientes, setPacientes] = useState(new Map())
 
     async function obtenerDatos() {
         setDataCitas([]);
         setUsuarios(new Map())
+        setPacientes(new Map())
 
         const datosBD = await get_Citas_BD();
         setDataCitas(datosBD);
@@ -28,8 +31,12 @@ export default function Citas() {
 
         const usu = await DatoBD_USU();
         const map = new Map(usu.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO + ' - ' + mapa.get(dato.ID_ESPECIALIDAD)]));
+
+        const pac = await get_Pacientes_BD();
+        const map_pac = new Map(pac.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO ]));
+
         setUsuarios(map)
-        
+        setPacientes(map_pac)
         setIsLoading(false);
     }
 
@@ -69,7 +76,7 @@ export default function Citas() {
                             <Grid
                                 data={dataCitas.map(cita => [
                                     usuarios.get(cita.ID_USUARIO),
-                                    cita.ID_PACIENTE,
+                                    pacientes.get(cita.ID_PACIENTES),
                                     formatearFechaHora(cita.DATEINICIO),
                                     
                                     _(<Estado estado={cita.ID_ESTADOS} />),
@@ -114,29 +121,3 @@ export default function Citas() {
 
     )
 }
-
-// <table className="table align-middle">
-//     <thead>
-//         <tr className="table-secondary text-center">
-//             <th>Medico</th>
-//             <th>Paciente</th>
-//             <th>Fecha y Hora</th>
-//             <th>Estado</th>
-//             <th>Acciones</th>
-//         </tr>
-//     </thead>
-//     <tbody className="text-center align-middle">
-//         {usuarios.map((dato, index) => (
-//             <tr>
-//                 <td className="text-start">{dato.ID_USUARIO}</td>
-//                 <td>{dato.ID_PACIENTES}</td>
-//                 <td>{dato.FECHAHORA}</td>
-//                 <td> <Estado estado={dato.ID_ESTADOS} /></td>
-//                 <td >
-//                     <Modificar dato={dato}
-//                         obtenerDatos={obtenerDatos} />
-//                 </td>
-//             </tr>
-//         ))}
-//     </tbody>
-// </table>

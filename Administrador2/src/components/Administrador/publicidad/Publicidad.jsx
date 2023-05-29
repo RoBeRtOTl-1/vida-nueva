@@ -7,7 +7,7 @@ import Agregar from "./Agregar";
 import Modificar from "./Modificar";
 import Estado from "../estados/Estados";
 
-import { get_BD_Publicidad } from "../../firebase/Publicidad/PUB_CRUD";
+import { get_BD_Publicidad, vencerPublicidad } from "../../firebase/Publicidad/PUB_CRUD";
 import { formatearFechaHora } from "../../firebase/Fechas/Fechas";
 
 export default function Publicidad() {
@@ -16,7 +16,11 @@ export default function Publicidad() {
 
     async function obtenerDatos() {
         setDatos([]);
-        const datosBD = await get_BD_Publicidad();
+
+        const  datosBD = await get_BD_Publicidad();
+
+        await vencerPublicidad( await datosBD )
+
         setDatos(datosBD);
         setIsLoading(false);
     }
@@ -27,7 +31,7 @@ export default function Publicidad() {
 
 
     return (
-        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px"}} >
+        <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px" }} >
             <div className="container-fluid mt-4" >
 
                 <div className="row">
@@ -49,17 +53,26 @@ export default function Publicidad() {
                                 </div>
                             ) : (
                                 <Grid
-                                    data={datos.map(dato =>[
+                                    data={datos.map(dato => [
                                         dato.NOMBRE,
                                         dato.DESCRIPCION,
                                         formatearFechaHora(dato.FECHA_TERMINACION),
                                         _(<Estado estado={dato.ID_ESTADOS} />),
-                                        _(<Modificar datos={dato} /> )
+                                        _(<Modificar datos={dato} obtenerDatos={obtenerDatos} />)
                                     ])}
 
+                                  
+
                                     columns={[
-                                        'Nombre',
-                                        'Descripcion',
+                                        {
+                                            name:'Nombre',
+                                            width:'20%'
+                                        },
+                                        {
+
+                                            name:'Descripcion',
+                                            width: '30%'
+                                        },
                                         'Fecha terminacion',
                                         'Estado',
                                         'Acciones'

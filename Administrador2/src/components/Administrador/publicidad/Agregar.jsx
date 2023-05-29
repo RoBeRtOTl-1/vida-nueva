@@ -18,20 +18,23 @@ import { Stack, TextField } from '@mui/material'
 import { date_to_ts } from '../../firebase/Fechas/Fechas';
 import { uploadFile } from '../../firebase/firebase';
 import { insertarPublicidad } from '../../firebase/Publicidad/PUB_CRUD';
-
+import { Toaster, toast } from "react-hot-toast"
 
 export default function Agregar({ obtenerDatos }) {
     const [open, setOpen] = useState(false)
     const [file, setFile] = useState('')
     const [previewUrl, setPreviewUrl] = useState(null)
-    const [datosPB, setDatosPB] = useState({
+
+    const initialDatosPB = {
         NOMBRE: '',
         DESCRIPCION: '',
         TIEMPO: '',
         FECHA_TERMINACION: '',
         ID_ESTADOS: '',
         URL: ''
-    })
+    }
+
+    const [datosPB, setDatosPB] = useState(initialDatosPB)
 
     const handleChange = (newFile) => {
         setFile(newFile)
@@ -50,6 +53,12 @@ export default function Agregar({ obtenerDatos }) {
         const url = await uploadFile(file)
         datosPB['URL'] = url ;
         await insertarPublicidad(datosPB)
+
+        setDatosPB(initialDatosPB)
+        setFile('')
+        setPreviewUrl(null)
+
+        toast.success('Publicidad guardada')
 
     }
 
@@ -124,6 +133,10 @@ export default function Agregar({ obtenerDatos }) {
 
                 </DialogActions>
             </Dialog>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
         </div>
     )
 }

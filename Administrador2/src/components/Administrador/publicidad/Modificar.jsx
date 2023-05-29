@@ -11,20 +11,18 @@ import React, { useState } from 'react'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { MuiFileInput } from 'mui-file-input'
 import Image from 'mui-image'
-
 import { Stack, TextField } from '@mui/material'
 import { date_to_ts, ts_to_date } from '../../firebase/Fechas/Fechas';
-import { uploadFile } from '../../firebase/firebase';
-import { insertarPublicidad } from '../../firebase/Publicidad/PUB_CRUD';
+import { actualizarPublicidad } from '../../firebase/Publicidad/PUB_CRUD';
 import dayjs from 'dayjs';
-
+import { Toaster, toast } from "react-hot-toast"
 
 export default function Modificar({ datos ,obtenerDatos }) {
     const [open, setOpen] = useState(false)
     const [file, setFile] = useState('')
-    const [previewUrl, setPreviewUrl] = useState(null)
+    // const [previewUrl, setPreviewUrl] = useState(null)
+
     const [datosPB, setDatosPB] = useState({
         NOMBRE: datos.NOMBRE,
         DESCRIPCION: datos.DESCRIPCION,
@@ -48,9 +46,9 @@ export default function Modificar({ datos ,obtenerDatos }) {
     }
 
     const ins_Pub = async () => {
-        const url = await uploadFile(file)
-        datosPB['URL'] = url;
-        await insertarPublicidad(datosPB)
+        await actualizarPublicidad(datos.ID, datosPB, 8)
+        obtenerDatos()
+        toast.success('Publicidad modificada')
 
     }
 
@@ -100,7 +98,12 @@ export default function Modificar({ datos ,obtenerDatos }) {
                                         <TextField label="Tiempo (seg)" value={datosPB.TIEMPO} name='TIEMPO' onChange={(e) => handleDataP(e)} />
 
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker label="Fecha de terminacion" defaultValue={dayjs(ts_to_date(datosPB.FECHA_TERMINACION))} onChange={(newValue) => handleDate(newValue)} />
+                                            <DatePicker 
+                                            label="Fecha de terminacion" 
+                                            defaultValue={dayjs(ts_to_date(datosPB.FECHA_TERMINACION))} 
+                                            onChange={(newValue) => handleDate(newValue)} 
+                                            disablePast={true}
+                                            />
                                         </LocalizationProvider>
 
                                     </Stack>
@@ -110,7 +113,7 @@ export default function Modificar({ datos ,obtenerDatos }) {
                             </div>
                             <div className='col-6'>
                                 <Image src={datosPB.URL} width={500} height={500} duration={0} fit={"contain"} />
-                                <MuiFileInput value={file} onChange={handleChange} />
+                                {/* <MuiFileInput value={file} onChange={handleChange} /> */}
                             </div>
 
                         </div>
@@ -123,13 +126,15 @@ export default function Modificar({ datos ,obtenerDatos }) {
                     <Button className='bg-success text-white' onClick={async () => {
                         setOpen(false)
                         await ins_Pub()
-                        //await insertar(valoresSeleccionados)
-                        obtenerDatos()
-                        // reiniciarFormulario()
+                        
                     }} >Guardar</Button>
 
                 </DialogActions>
             </Dialog>
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
         </div>
     )
 }

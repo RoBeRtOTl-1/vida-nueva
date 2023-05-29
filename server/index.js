@@ -7,6 +7,7 @@ import { PORT } from "./config.js";
 
 let cola_turnos = []
 let turnosActual = {}
+let cola_publicidad = []
 
 
 const app = express()
@@ -60,9 +61,6 @@ io.on('connection', (socket) => {
      * 
      */
     socket.on("DatosActuales", async (data) => {
-        // console.log("123123")
-        // console.log(data)
-        // console.log(llamado )
         cola_turnos = data[0]
         turnosActual = data[1][0] ? data[1][0] : null
 
@@ -70,6 +68,15 @@ io.on('connection', (socket) => {
         io.emit("colaTurnos", cola_turnos) // Emite el evento "colaTurnos" para actualizar los turnos 
         //                                    // de la pantalla 
     });
+
+    socket.on("PublicidadActiva", async (data) => {
+        if (!( cola_publicidad[0])){
+            cola_publicidad = data
+        }
+        await io.emit('publicidad', await cola_publicidad)
+        // console.log( cola_publicidad[0] ? 'si' : 'no')
+
+    })
 
  
 

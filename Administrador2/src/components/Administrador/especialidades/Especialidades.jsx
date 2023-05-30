@@ -21,8 +21,6 @@ export default function Especialidades() {
         
         setBDesp(arrEsp)
 
-        console.log(arrEsp)
-
         setDatos(datosBD);
         setIsLoading(false);
     }

@@ -28,11 +28,13 @@ export default function Turnos() {
 
         get_BD_Publicidad_Activos().then((data) => {
             socket.emit("PublicidadActiva", data);
-            setIsLoading(false)
+            handlePublicidad()
         })
-
+        
         socket.on('publicidad', async (publicidadActual) => {
             setPublicidad(await publicidadActual)
+           
+            setIsLoading(false)
         })
 
         /**
@@ -52,7 +54,7 @@ export default function Turnos() {
             setTurnoActual(nuevturno);
         });
 
-        handlePublicidad()
+
         // Limpiar el evento al desmontar el componente
         return () => {
             socket.off("turnoActual");
@@ -64,43 +66,46 @@ export default function Turnos() {
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-    
-    
-    async function handlePublicidad(){
-        let i = 0 
+
+
+    async function handlePublicidad() {
+        let i = 0
         console.log(publicidad)
-        while(true){
+        while (true) {
             setUrl(publicidad[i].URL)
             console.log(publicidad[i])
             await sleep(publicidad[i].TIEMPO * 1000);
-            if (i == publicidad.length -1){
+            if (i == publicidad.length - 1) {
                 i = 0
-            }else{
-                i+=1
+            } else {
+                i += 1
             }
         }
-        
+
     }
 
     return (
         <div className="container-fluid p-0 overflow-hidden " >
-            {
-                isLoading ? (
-                    <div className="d-flex justify-content-center">
-                        <div className="spinner-border" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="row ">
-                        <div className="col-md-4 bg-light  pe-0 d-flex flex-column vh-100">
-                            {turnosEnCola.map((turno, index) => (
-                                <Rectangle key={index.ID} turno={turno.ID_TURNO} />
-                            ))}
-                        </div>
-                        <div className="col-md-8 p-0  d-flex flex-column">
 
-                            <div className="bg-secondary" style={{ height: "80%" }} >
+            <div className="row ">
+                <div className="col-md-4 bg-light  pe-0 d-flex flex-column vh-100">
+                    {turnosEnCola.map((turno, index) => (
+                        <Rectangle key={index.ID} turno={turno.ID_TURNO} />
+                    ))}
+                </div>
+                <div className="col-md-8 p-0  d-flex flex-column">
+
+                    <div className="bg-secondary" style={{ height: "80%" }} >
+
+
+                        {
+                            isLoading ? (
+                                <div className="d-flex justify-content-center">
+                                    <div className="spinner-border" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            ) : (
 
                                 <Image src={url}
                                     width="100%"
@@ -109,15 +114,16 @@ export default function Turnos() {
                                     fit="cover"
                                 />
 
-                            </div>
-
-                            <div className="bg-info text-center pt-3" style={{ height: "20%", fontSize: "500%" }}>
-                                Turno: {turnoActual ? turnoActual.ID_TURNO : null}
-                            </div>
-                        </div>
+                            )
+                        }
                     </div>
-                )
-            }
+
+                    <div className="bg-info text-center pt-3" style={{ height: "20%", fontSize: "500%" }}>
+                        Turno: {turnoActual ? turnoActual.ID_TURNO : null}
+                    </div>
+                </div>
+            </div>
+
 
         </div>
     );

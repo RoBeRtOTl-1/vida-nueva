@@ -55,7 +55,7 @@ export default function Turnos() {
                                         tipo.ID_SERVICIO,
                                         ts_to_HM(tipo.FECHAHORA),
                                         _(<Estado estado={tipo.ID_ESTADOS} />),
-                                        tipo.ID_ESTADOS != 4 ?
+                                        (tipo.ID_ESTADOS != 4 )?
                                             _(<Modificar dato={tipo} obtenerDatos={obtenerDatos} />)
                                             : ''
 

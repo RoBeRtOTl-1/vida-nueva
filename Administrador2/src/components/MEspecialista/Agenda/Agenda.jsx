@@ -28,13 +28,10 @@ import { date_to_ts, getCurrentDate } from '../../firebase/Fechas/Fechas';
 export default function Agenda() {
     //Usamos el useRef para apuntar al calendario
     const calendarRef = useRef(null);
-    const [citasMedico, setCitasMedico] = ([{ // this object will be "parsed" into an Event Object
-        title: 'The Title', // a property!
-        start: '2023-05-21', // a property!
-        end: '2023-05-21' // a property! ** see important note below about 'end' **
-    }])
+
     const [currentCitas, setCurrentCitas] = useState([])
     const [open, setOpen] = useState(false)
+    const [open2, setOpen2] = useState(false)
 
     const { currenUser } = useContext(DataContext) //Ojo poner el DataContext cuando lo deseamos consumir
 
@@ -61,8 +58,9 @@ export default function Agenda() {
         MEDICAMENTOS: ''
     })
 
-    const handleDate = (date) =>{
-        setOpen(true)
+    const handleDate = (date) => {
+        console.log(date)
+        setOpen2(true)
     }
 
 
@@ -105,9 +103,104 @@ export default function Agenda() {
                         locale={'es'}
 
                         select={() => { console.log("hola") }}
-                        eventClick={(select) => { handleDate(select)}}
+                        eventClick={(select) => { handleDate(select) }}
                     />
                 </div>
+
+                <Dialog
+                    open={open2}
+                    onClose={() => setOpen2(false)}
+                    aria-labelledby='dialog-title'
+                    aria-describedby='dialog-description'
+                    PaperProps={{
+                        style: {
+                            maxWidth: '1000px',
+                        },
+                    }}>
+
+                    <DialogTitle id='dialog-title'>
+                        <span style={{ color: "black", fontSize: "23px" }}>Registar consulta medica</span>
+                        <Button onClick={() => {
+                            setOpen2(false)
+                            reiniciarFormulario()
+                        }}>X</Button>
+                        <hr />
+                    </DialogTitle>
+
+                    <DialogContent>
+
+                        <DialogContentText className='mt-2' id='dialog-description'>
+                            <Stack spacing={3}>
+                                <Stack direction="row" spacing={2}>
+                                    <TextField type="number" label="Peso" size="small" name="PESO"
+                                        value={datosPer.PESO}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                        InputProps={{
+                                            endAdornment: <InputAdornment position="end">kg</InputAdornment>,
+                                        }} />
+
+                                    <TextField label="Estatura" name="ESTATURA" size="small"
+                                        value={datosPer.ESTATURA}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                        InputProps={{
+                                            endAdornment: <InputAdornment position="end">cm</InputAdornment>,
+                                        }} />
+
+
+                                    <TextField label="IMC" name="IMC" size="small"
+                                        value={datosPer.IMC}
+                                        onChange={(e) => handleDatosPersonales(e)} />
+
+                                    <TextField label="Presion siast" name="PRESION_SIAST" size="small"
+                                        value={datosPer.PRESION_SIAST}
+                                        onChange={(e) => handleDatosPersonales(e)} />
+
+                                    <TextField label="Presion diast" name="PRESION_DIAST" size="small"
+                                        value={datosPer.PRESION_DIAST}
+                                        onChange={(e) => handleDatosPersonales(e)} />
+                                </Stack>
+
+                                <Stack spacing={2}>
+                                    <TextField
+                                        label="Sintomas"
+                                        name='SINTOMAS'
+                                        size="small"
+                                        value={datosPer.SINTOMAS}
+                                        onChange={(e) => handleDatosPersonales(e)} />
+                                </Stack>
+
+                                <Stack spacing={2}>
+                                    <TextField
+                                        label="Diagnostico"
+                                        name='DIAGNOSTICO'
+                                        size="small"
+                                        value={datosPer.DIAGNOSTICO}
+                                        onChange={(e) => handleDatosPersonales(e)} />
+                                </Stack>
+
+                                <Stack spacing={2}>
+                                    <TextField
+                                        label="Medicamentos"
+                                        name='MEDICAMENTOS'
+                                        size="small"
+                                        value={datosPer.MEDICAMENTOS}
+                                        onChange={(e) => handleDatosPersonales(e)} />
+                                </Stack>
+
+
+                            </Stack>
+                        </DialogContentText>
+                    </DialogContent>
+
+                    <DialogActions className='align-middle'>
+                        <Button className='bg-success text-white' onClick={async () => {
+                            setOpen2(false)
+                            await guardarConsultaMedica()
+                            obtenerDatos()
+                        }} >Guardar</Button>
+
+                    </DialogActions>
+                </Dialog>
 
                 <Dialog
                     open={open}

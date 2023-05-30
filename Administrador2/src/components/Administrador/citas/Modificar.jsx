@@ -14,7 +14,7 @@ import { actualizarCita } from "../../firebase/Citas/CIT_CRUD"
 import { formatearFechaHora } from '../../firebase/Fechas/Fechas'
 import { Toaster, toast } from "react-hot-toast"
 
-export default function Modificar({ dato, medico, obtenerDatos }) {
+export default function Modificar({ dato, medico, obtenerDatos, paciente }) {
     const [open, setOpen] = useState(false)
 
     const [estado, setEstado] = useState(dato.ID_ESTADOS);
@@ -98,7 +98,7 @@ export default function Modificar({ dato, medico, obtenerDatos }) {
                                     <Stack spacing={2}>
                                         <TextField
                                             label="Paciente"
-                                            value={formatearFechaHora(dato.DATEFIN)}
+                                            value={paciente}
                                             size='small'
                                             variant="standard"
                                             InputProps={{

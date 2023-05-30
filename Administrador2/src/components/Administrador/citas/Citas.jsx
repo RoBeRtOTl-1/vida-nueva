@@ -85,6 +85,7 @@ export default function Citas() {
                                     _(<Modificar 
                                         dato={cita} 
                                         medico={usuarios.get(cita.ID_USUARIO)} 
+                                        paciente={pacientes.get(cita.ID_PACIENTES)} 
                                         obtenerDatos={obtenerDatos}
                                     />) : ''
                                 ])}

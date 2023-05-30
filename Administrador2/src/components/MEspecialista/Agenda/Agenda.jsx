@@ -23,7 +23,10 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { get_Citas_Filtradas_BD } from "../../firebase/Citas/CIT_CRUD";
 import { DataContext } from "../../../context/UserContext";
-import { date_to_ts, getCurrentDate } from '../../firebase/Fechas/Fechas';
+import { date_to_ts, formatearFechaHora, getCurrentDate } from '../../firebase/Fechas/Fechas';
+import { get_Pacientes_BD } from '../../firebase/Pacientes/PAC_CRUD.js';
+import { DatoDeLaBDFiltrado } from '../../firebase/Ususarios/USU_CRUD.js';
+import { DatoDeLaBD } from '../../firebase/Ususarios/USU_CRUD.js';
 
 export default function Agenda() {
     //Usamos el useRef para apuntar al calendario
@@ -36,12 +39,13 @@ export default function Agenda() {
     const { currenUser } = useContext(DataContext) //Ojo poner el DataContext cuando lo deseamos consumir
 
     const obtenerDatos = async () => {
-        console.log(currenUser)
         setCurrentCitas(await get_Citas_Filtradas_BD(currenUser.ID_USUARIO))
-        console.log(currentCitas)
+        await obtenerMedicos()
+        await obtenerPac()
     }
     useEffect(() => {
         obtenerDatos()
+
     }, []);
 
     const [datosPer, setDatosPer] = useState({
@@ -58,8 +62,33 @@ export default function Agenda() {
         MEDICAMENTOS: ''
     })
 
+    const initialDatosCita = {
+        ID_PACIENTES: '',
+        ID_USUARIO: '',
+        DATEINICIO: '',
+        DATEFIN: '',
+    }
+
+    const [medAct, setMedAct] = useState(new Map())
+    const [pac, setPac] = useState(new Map())
+
+    const obtenerPac = async () => {
+        const pacientes = await get_Pacientes_BD()
+        setPac(await new Map(pacientes.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+    }
+
+    const obtenerMedicos = async () => {
+        const med = await DatoDeLaBD();
+        setMedAct(await new Map(med.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+
+    }
+
+    const [dataDate, setDataDate] = useState(initialDatosCita)
+
     const handleDate = (date) => {
-        console.log(date)
+        setDataDate(date.event.extendedProps.data)
+
+        console.log(dataDate)
         setOpen2(true)
     }
 
@@ -114,12 +143,12 @@ export default function Agenda() {
                     aria-describedby='dialog-description'
                     PaperProps={{
                         style: {
-                            maxWidth: '1000px',
+                            maxWidth: '800px',
                         },
                     }}>
 
                     <DialogTitle id='dialog-title'>
-                        <span style={{ color: "black", fontSize: "23px" }}>Registar consulta medica</span>
+                        <span style={{ color: "black", fontSize: "23px" }}>Datos del paciente</span>
                         <Button onClick={() => {
                             setOpen2(false)
                             reiniciarFormulario()
@@ -130,74 +159,50 @@ export default function Agenda() {
                     <DialogContent>
 
                         <DialogContentText className='mt-2' id='dialog-description'>
-                            <Stack spacing={3}>
-                                <Stack direction="row" spacing={2}>
-                                    <TextField type="number" label="Peso" size="small" name="PESO"
-                                        value={datosPer.PESO}
-                                        onChange={(e) => handleDatosPersonales(e)}
-                                        InputProps={{
-                                            endAdornment: <InputAdornment position="end">kg</InputAdornment>,
-                                        }} />
+                            <DialogContentText className='' id='dialog-description'>
+                                <div className="row text-center text-black">
 
-                                    <TextField label="Estatura" name="ESTATURA" size="small"
-                                        value={datosPer.ESTATURA}
-                                        onChange={(e) => handleDatosPersonales(e)}
-                                        InputProps={{
-                                            endAdornment: <InputAdornment position="end">cm</InputAdornment>,
-                                        }} />
+                                    <div className="col-12 ">
+                                        <h6>Medico:</h6>
+                                    </div>
+                                    <div className="col-12 ">
+                                        <h2>{dataDate.ID_USUARIO ? medAct.get(dataDate.ID_USUARIO) : ''}</h2>
+                                    </div>
+                                    <div className="col-12 ">
+                                        <h6>Paciente:</h6>
+                                    </div>
+                                    <div className="col-12 ">
+                                        <h2>{dataDate.ID_PACIENTES ? pac.get(dataDate.ID_PACIENTES) : ''}</h2>
+                                    </div>
+                                    <div className="col-12 ">
+                                        <h6>Fecha:</h6>
+                                    </div>
+                                    <div className="col-12 ">
+                                        <h2>{dataDate.DATEINICIO ? formatearFechaHora((dataDate.DATEINICIO)) : 'ño'}</h2>
+                                    </div>
+                                </div>
 
-
-                                    <TextField label="IMC" name="IMC" size="small"
-                                        value={datosPer.IMC}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-
-                                    <TextField label="Presion siast" name="PRESION_SIAST" size="small"
-                                        value={datosPer.PRESION_SIAST}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-
-                                    <TextField label="Presion diast" name="PRESION_DIAST" size="small"
-                                        value={datosPer.PRESION_DIAST}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Sintomas"
-                                        name='SINTOMAS'
-                                        size="small"
-                                        value={datosPer.SINTOMAS}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Diagnostico"
-                                        name='DIAGNOSTICO'
-                                        size="small"
-                                        value={datosPer.DIAGNOSTICO}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Medicamentos"
-                                        name='MEDICAMENTOS'
-                                        size="small"
-                                        value={datosPer.MEDICAMENTOS}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-
-                            </Stack>
+                            </DialogContentText>
                         </DialogContentText>
                     </DialogContent>
 
-                    <DialogActions className='align-middle'>
-                        <Button className='bg-success text-white' onClick={async () => {
-                            setOpen2(false)
-                            await guardarConsultaMedica()
-                            obtenerDatos()
-                        }} >Guardar</Button>
+                    <DialogActions className='justify-content-between'>
+
+                        <Button
+                            variant='text'
+                            color='error'
+                            onClick={async () => {
+                                setOpen2(false)
+                            }} >Cancelar</Button>
+
+                        <Button
+                            className='bg-success text-white'
+                            onClick={async () => {
+                                setOpen2(false)
+                                setOpen(true)
+                                await guardarConsultaMedica()
+                                obtenerDatos()
+                            }} >Atender</Button>
 
                     </DialogActions>
                 </Dialog>

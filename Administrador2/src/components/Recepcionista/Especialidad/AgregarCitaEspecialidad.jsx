@@ -27,7 +27,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatoDeLaBDFiltrado } from '../../firebase/Ususarios/USU_CRUD';
 import { get_Horario_Medico_BD } from '../../firebase/Horarios/HOR_CRUD';
-import { actualizarCita, get_Citas_Filtradas_BD, insertarCita } from '../../firebase/Citas/CIT_CRUD';
+import { actualizarCita, get_Cita_Especifica_BD, get_Citas_Filtradas_BD, insertarCita } from '../../firebase/Citas/CIT_CRUD';
 import { date_to_ts, formatearFechaHora, ts_to_date } from '../../firebase/Fechas/Fechas';
 import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD';
 import { get_Pacientes_BD, get_Pacientes_Filtrado_BD, insertarPaciente } from '../../firebase/Pacientes/PAC_CRUD';
@@ -37,13 +37,21 @@ import CancelarCitaEspecialidad from './modales/CancelarCitaEspecialidad';
 import { insertarDom } from '../../firebase/Domicilio/Dom_CRUD';
 
 
+
+
 const AgregarCitaEspecialidad = ({ especialidad, id }) => {
     //Open y Open2 para controlar cuando se muestran los modales
     const [open, setOpen] = useState(false);
     const [open2, setOpen2] = useState(false);
     const [open3, setOpen3] = useState(false);
+    const [open4, setOpen4] = useState(false);
     const [openCancel, setOpenCancel] = useState(false);
     const [select, setSelect] = useState()
+    const [confimacion, setConfirmacion] = useState()
+
+    const regex = /^[A-Z\sa-z]+$/;
+    const regexCurp = /[A-Z0-9]+/;
+
 
     const [medAct, setMedAct] = useState()
     const [pac, setPac] = useState()
@@ -116,8 +124,12 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
         evt.preventDefault();
         //Se busco por curp?        
         if (cita.ID_PACIENTE) {
+            obtenerPac()
+            obtenerMedicos()
+
             setOpen2(false)
-            await insertarCita(cita)
+            const id_cita = await insertarCita(cita)
+
             //resetMedicos()
             resetCita()
             resetDatosDom()
@@ -125,42 +137,43 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
             resetCurrentSlots()
             resetSlots()
             toast.success('Cita agendada')
+            setConfirmacion(await get_Cita_Especifica_BD(id_cita))
+            setOpen4(true)
+
         } else { //No se busco por cup
-            
+
             //Revisamos que la CURP no este siendo usada
             if (curps.includes(datosPer.CURP)) {
                 toast.error('La CURP ya esta en uso')
             } else {
                 //Insertamos al paciente
-                const ID_DOM = await insertarDom(datosDom);
-                datosPer["ID_DOMICILIO"] = ID_DOM;
-                const ID_USU = await insertarPaciente(datosPer)
-                cita.ID_PACIENTE = ID_USU
+                if (datosPer.CURP.length < 18) {
+                    toast.error("CURP INVALIDA")
+                } else {
+                    const ID_DOM = await insertarDom(datosDom);
+                    datosPer["ID_DOMICILIO"] = ID_DOM;
+                    const ID_USU = await insertarPaciente(datosPer)
+                    cita.ID_PACIENTE = ID_USU
 
-                setOpen2(false)
-                await insertarCita(cita)
-                //resetMedicos()
-                resetCita()
-                resetDatosDom()
-                resetDatosPer()
-                resetCurrentSlots()
-                resetSlots()
-                toast.success('Cita agendada')
+                    obtenerPac()
+                    obtenerMedicos()
+
+                    setOpen2(false)
+                    const id_cita = await insertarCita(cita)
+                    //resetMedicos()
+                    resetCita()
+                    resetDatosDom()
+                    resetDatosPer()
+                    resetCurrentSlots()
+                    resetSlots()
+
+                    toast.success('Cita agendada')
+                    setConfirmacion(await get_Cita_Especifica_BD(id_cita))
+                    setOpen4(true)
+                }
+
             }
         }
-
-        //No buscado por curp por curp
-
-        //setOpen2(false)
-        //console.log(curps.includes(datosPer.CURP))
-        // await insertarCita(cita)
-        // //resetMedicos()
-        // resetCita()
-        // resetDatosDom()
-        // resetDatosPer()
-        // resetCurrentSlots()
-        // resetSlots()
-        // toast.success('Cita agendada')
     }
 
     function handleDatosPersonales(event) {
@@ -184,11 +197,14 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
     const obtenerPac = async () => {
         const pacientes = await get_Pacientes_BD()
         setCurps([])
+        setPac(new Map())
         setPac(await new Map(pacientes.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+
         const c = await (pacientes.map(pac => pac.CURP))
         setCurps(c)
     }
     const obtenerMedicos = async () => {
+        setMedAct(new Map())
         const med = await DatoDeLaBDFiltrado(id);
         setMedicos(med)
         setMedAct(await new Map(med.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
@@ -217,6 +233,10 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
         //console.log(calendarRef.current)
     }
 
+    const hanndleDatePac = (newValue) => {
+        datosPer.NACIMIENTO = date_to_ts(newValue)
+    }
+
     const buscarPorCurp = async () => {
         //const data = await get_Pacientes_Filtrado_BD(datosPer.CURP)
         get_Pacientes_Filtrado_BD(datosPer.CURP).then((data) => {
@@ -234,15 +254,7 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
 
     const handleEventClick = (selected) => {
         setSelect(selected)
-        console.log(select.event)
         setOpen3(true)
-        // if (
-        //     window.confirm(
-        //         `Are you sure you want to delete the event '${selected.event}'`
-        //     )
-        // ) {
-        //     selected.event.remove();
-        // }
     };
 
     const cancelarCita = async () => {
@@ -261,10 +273,11 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
         resetDatosPer()
         resetCurrentSlots()
         resetSlots()
-        cita.ID_PACIENTE=''
+        cita.ID_PACIENTE = ''
     }
     return (
         <div>
+
             <Button className="bg-light border border-dark-subtle rounded-4 text-black shadow  mb-5 bg-body-tertiary rounded"
                 style={{ width: "100%", height: "100%", fontSize: "20px" }}
                 onClick={() => setOpen(true)}>
@@ -466,20 +479,38 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                         name="NOMBRE"
                                         required
                                         value={datosPer.NOMBRE}
-                                        onChange={(e) => handleDatosPersonales(e)}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
                                     />
+
                                     <TextField
                                         label="Apellido paterno"
                                         name="AP_PATERNO"
                                         required
                                         size="small"
-                                        value={datosPer.AP_PATERNO} onChange={(e) => handleDatosPersonales(e)} />
+                                        value={datosPer.AP_PATERNO}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
+
                                     <TextField
                                         label="Apellido materno"
                                         name="AP_MATERNO"
                                         required
                                         size="small"
-                                        value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
+                                        value={datosPer.AP_MATERNO}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
                                     <TextField required size='small' name="ID_TIP_SANGRE" label="Tipo de sangre" select value={datosPer.ID_TIP_SANGRE} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
                                         {tiposSangre.map((dato) => (
@@ -489,8 +520,32 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                 </Stack>
 
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required type="number" label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
-                                    <TextField required label="CURP" name="CURP" size="small" value={datosPer.CURP} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField
+                                        required
+                                        type="number"
+                                        label="Telefono"
+                                        name='TELEFONO'
+                                        size="small"
+                                        value={datosPer.TELEFONO}
+
+                                        onChange={(e) => {
+                                            if (datosPer.TELEFONO.length < 10 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosPersonales(e)
+                                            }
+                                        }}
+
+                                    />
+                                    <TextField
+                                        required label="CURP"
+                                        name="CURP"
+                                        size="small"
+                                        value={datosPer.CURP}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 19 && regexCurp.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
                                     <TextField required size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
                                         onChange={(e) => handleDatosPersonales(e)}>
@@ -501,7 +556,9 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
                                             label="Fecha de nacimiento"
-                                            value={dayjs(ts_to_date(datosPer.NACIMIENTO))}
+                                            disableFuture={true}
+                                            defaultValue={dayjs(ts_to_date(datosPer.NACIMIENTO))}
+                                            onChange={(newValue) => hanndleDatePac(newValue)}
                                         />
                                     </LocalizationProvider>
 
@@ -509,23 +566,115 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                 </Stack>
 
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required label="Email" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                    <TextField required label="Alergias" size="small" multiline name="ALERGIAS" value={datosPer.ALERGIAS} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField
+                                        required
+                                        label="Email"
+                                        size="small"
+                                        name="EMAIL"
+                                        value={datosPer.EMAIL}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                    />
+                                    <TextField
+                                        required
+                                        label="Alergias"
+                                        size="small"
+                                        multiline
+                                        maxRows={4}
+                                        name="ALERGIAS"
+                                        value={datosPer.ALERGIAS}
+                                        onChange={(e) => {
+                                            if ((regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
                                 </Stack>
 
                                 <h5 style={{ color: "black" }}>Domicilio</h5>
                                 <hr />
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField required label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField required type="number" label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField required label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField
+                                        required
+                                        label="Ciudad"
+                                        size="small"
+                                        name="CIUDAD"
+                                        value={datosDom.CIUDAD}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e);
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        label="Colonia"
+                                        size="small"
+                                        name="COLONIA"
+                                        value={datosDom.COLONIA}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e);
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        type="number"
+                                        label="Codigo postal"
+                                        size="small"
+                                        name="COD_POSTAL"
+                                        value={datosDom.COD_POSTAL}
+                                        onChange={(e) => {
+                                            if (datosDom.COD_POSTAL.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+
+                                    />
+                                    <TextField
+                                        required
+                                        label="Calle"
+                                        size="small"
+                                        name="CALLE"
+                                        value={datosDom.CALLE}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+
+                                    />
                                 </Stack>
 
                                 <Stack direction="row" spacing={2}>
-                                    <TextField type="number" required label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField type="number" label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField
+                                        type="number"
+                                        required
+                                        label="Num. Exterior"
+                                        size="small"
+                                        name="NUM_EXTERIOR"
+                                        value={datosDom.NUM_EXTERIOR}
+                                        onChange={(e) => {
+                                            if (datosDom.NUM_EXTERIOR.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+
+                                    />
+                                    <TextField
+                                        type="number"
+                                        label="Num. Interior"
+                                        size="small"
+                                        name="NUM_INTERIOR"
+                                        value={datosDom.NUM_INTERIOR}
+                                        onChange={(e) => {
+                                            if (datosDom.NUM_INTERIOR.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+
+                                    />
                                 </Stack>
 
                             </Stack>
@@ -647,7 +796,7 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                             setOpenCancel(true)
                         }}
                     >
-                        X
+                        Cancelar cita
                     </Button>
 
                 </DialogActions>
@@ -687,6 +836,70 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                     </Grid>
                 </DialogContent >
             </Dialog>
+
+            <Dialog
+                open={open4}
+                onClose={() => setOpen4(false)}
+                aria-labelledby='dialog-title'
+                aria-describedby='dialog-description'
+                PaperProps={{
+                    style: {
+                        maxWidth: '1000px',
+                    },
+                }}>
+
+                <DialogTitle id='dialog-title'>
+                    <div className='row'>
+                        <div className='col-11'>
+                            Datos de cita
+                        </div>
+                        <div className='col-1'>
+                            <Button onClick={() => {
+                                setOpen4(false)
+                            }}
+                            >
+                                X
+                            </Button>
+                        </div>
+                    </div>
+
+
+                    <Divider className='bg-black' />
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText className='mt-2' id='dialog-description'>
+                        <DialogContentText className='' id='dialog-description'>
+                            <div className="row text-center text-black">
+                                <div className="col-12">
+                                    <h1>Clínica Vida Nueva</h1>
+                                </div>
+                                <div className="col-12 ">
+                                    <h6>Medico:</h6>
+                                </div>
+                                <div className="col-12 ">
+                                    <h2>{confimacion ? medAct.get(confimacion.ID_USUARIO) : 'Error'}</h2>
+                                </div>
+                                <div className="col-12 ">
+                                    <h6>Paciente:</h6>
+                                </div>
+                                <div className="col-12 ">
+                                    <h2>{confimacion ? pac.get(confimacion.ID_PACIENTES) : 'Error'}</h2>
+                                </div>
+                                <div className="col-12 ">
+                                    <h6>Fecha:</h6>
+                                </div>
+                                <div className="col-12 ">
+                                    <h2>{confimacion ? formatearFechaHora(confimacion.DATEINICIO) : 'Error'}</h2>
+                                </div>
+                            </div>
+                        </DialogContentText>
+                    </DialogContentText>
+                </DialogContent>
+
+                <DialogActions className='d-flex justify-content-end'>
+                </DialogActions>
+            </Dialog>
+
 
             <Toaster
                 position="top-right"

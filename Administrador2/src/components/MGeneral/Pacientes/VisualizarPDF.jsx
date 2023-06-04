@@ -114,6 +114,7 @@ export default function VisualizarPDF({ DATOS_PACIENTE, MEDICOS ,DATA }) {
                                 stroke="rgb(0,0,0)"
                             />
                         </Svg>
+                        
 
                         {/* <Text style={styles.text} >Medico: {MEDICO} </Text> */}
                         <Text style={styles.text} >Fecha de elaboracion:  {formatearFechaHora(dato.FECHAHORA)}</Text>

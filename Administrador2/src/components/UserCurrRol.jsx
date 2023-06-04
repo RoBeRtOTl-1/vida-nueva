@@ -4,83 +4,83 @@ import { DataContext } from "../context/UserContext";
 
 //import { DataProvider } from "../context/UserContext";
 
-export default function UserCurrRol(){
+export default function UserCurrRol() {
 
-    const { currenUser }  = useContext(DataContext) //Ojo poner el DataContext cuando lo deseamos consumir
-    
+    const { currenUser } = useContext(DataContext) //Ojo poner el DataContext cuando lo deseamos consumir
+
     return (
         <div className="d-flex align-items-center vh-100" >
-            <div  className=" container text-center">
+            <div className=" container text-center">
                 <div style={{ height: "130px" }} className="row d-flex justify-content-between">
-                    
+
                     {
-                     currenUser.ADMINISTRACION ? 
+                        currenUser.ADMINISTRACION ?
                             (<EtLink
-                            nombre="Administrador"
-                            rutImg="src/css/img/Roles/Administrador.png"
-                            bgColor="FFAEAE"
-                            toPath="/Administrador"/>) 
-                        : 
-                            (null)   
+                                nombre="Administrador"
+                                rutImg="src/css/img/Roles/Administrador.png"
+                                bgColor="FFAEAE"
+                                toPath="/Administrador" />)
+                            :
+                            (null)
                     }
-                    
+
                     {
-                     currenUser.ESPECIALISTA ? 
-                            (<EtLink 
+                        currenUser.ESPECIALISTA ?
+                            (<EtLink
                                 nombre="Medico especialista"
                                 rutImg="src/css/img/Roles/Medico.png"
                                 bgColor="A8D3F9"
-                                toPath="/Especialista"/>) 
-                        : 
-                            (null)   
+                                toPath="/Especialista" />)
+                            :
+                            (null)
                     }
-                    
+
                     {
-                     currenUser.MEDICOGENERAL ? 
-                            (<EtLink 
+                        currenUser.MEDICOGENERAL ?
+                            (<EtLink
                                 nombre="Medico general"
                                 rutImg="src/css/img/Roles/Medico.png"
                                 bgColor="A8D3F9"
-                                toPath="/General"/>) 
-                        : 
-                            (null)   
+                                toPath="/General" />)
+                            :
+                            (null)
                     }
-                    
-                    
+
+
                     {
-                     currenUser.RECEPCION ? 
-                            (<EtLink 
+                        currenUser.RECEPCION ?
+                            (<EtLink
                                 nombre="Recepcionista"
                                 rutImg="src/css/img/Roles/Recepcionista.png"
                                 bgColor="92EAA6"
                                 toPath="/Recepcionista"
-                                />) 
-                        : 
-                            (null)   
+                            />)
+                            :
+                            (null)
                     }
-                    
+
                     {
-                     currenUser.TURNOS ? 
-                            (<EtLink 
+                        currenUser.TURNOS ?
+                            (<EtLink
                                 nombre="Turnos"
                                 rutImg="src/css/img/Roles/Turnos.png"
                                 bgColor="D6F5FF"
                                 toPath="/Turnos"
-                                />) 
-                        : 
-                            (null)   
+                            />)
+                            :
+                            (null)
                     }
                 </div>
             </div>
-        </div> 
+        </div>
     )
 }
 
-function EtLink({nombre, rutImg, bgColor, toPath}){
-    return(
-        <Link className="pt-3" style={{ width: "200px", backgroundColor: `#${bgColor}` }} to={toPath}>
-                        <p>{nombre}</p>
-                        <img src={rutImg} style={{ width: "40px" }} alt="" />
-                    </Link>
+function EtLink({ nombre, rutImg, bgColor, toPath }) {
+    return (
+        <Link className="pt-3 text-dark link-offset-2 link-underline link-underline-opacity-0" style={{ width: "200px", backgroundColor: `#${bgColor}` }} to={toPath}>
+            <p>{nombre}</p>
+            <img src={rutImg} style={{ width: "40px" }} alt="" />
+        </Link>
     )
 }

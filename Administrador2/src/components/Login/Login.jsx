@@ -1,5 +1,5 @@
-import { Button, InputAdornment, Stack, TextField, Typography } from "@mui/material"
-import React, { useContext,  useState } from "react"
+import { Button, IconButton, InputAdornment, Stack, TextField, Typography } from "@mui/material"
+import React, { useContext, useState } from "react"
 
 import IniciarSesion from "../firebase/autenticacion/AUTH_CRUD"
 import { useNavigate } from "react-router-dom"
@@ -12,12 +12,25 @@ import { DataContext } from "../../context/UserContext"
 export default function Login() {
     const navigate = useNavigate()
 
+    const [kindInput, setKindInput] = useState("password")
+    const [icon, setIcon] = useState('bi bi-eye-slash')
+
+    const handleIcon = () => {
+        if (icon == "bi bi-eye-slash"){
+            setIcon("bi bi-eye")
+            setKindInput("text")
+        }else{
+            setIcon("bi bi-eye-slash")
+            setKindInput("password")
+        }
+    }
+
     const [user, setUser] = useState({
         EMAIL: '',
         CLAVE: ''
     })
 
-    const { currenUser ,setCurrentUser} = useContext(DataContext)
+    const { currenUser, setCurrentUser } = useContext(DataContext)
 
     function handleUser(event) {
         setUser({ ...user, [event.target.name]: event.target.value })
@@ -26,10 +39,10 @@ export default function Login() {
     async function validarCorreo() {
         const login = await IniciarSesion(user.EMAIL, user.CLAVE)
         if (login) { //Logueo correcto
-            setCurrentUser( login )
+            setCurrentUser(login)
             navigate("/Ventanas")
         } else { //No se encontro al usuario
-            toast.error('USUARIO Y/0 \nCONTRASEÑA INCORRECTOS') 
+            toast.error('USUARIO Y/0 \nCONTRASEÑA INCORRECTOS')
         }
 
     }
@@ -67,10 +80,18 @@ export default function Login() {
                                             label="Contraseña"
                                             name="CLAVE"
                                             value={user.CLAVE}
-                                            type="password"
+                                            type={kindInput}
                                             InputProps={{
-                                                startAdornment: <InputAdornment position="start"><i className="fa fa-search material-icons">lock_outline</i></InputAdornment>
+                                                startAdornment: <InputAdornment position="start"><i className="fa fa-search material-icons" >lock_outline</i></InputAdornment>,
+                                                endAdornment:
+                                                    <InputAdornment position="end">
+                                                        <i class={icon}
+                                                            onClick={() => {handleIcon() }}
+                                                        ></i>
+                                                    </InputAdornment>
+
                                             }}
+
                                             onChange={(e) => handleUser(e)} />
                                     </Stack>
                                 </Stack>

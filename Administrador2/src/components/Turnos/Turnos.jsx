@@ -30,7 +30,7 @@ export default function Turnos() {
             socket.emit("PublicidadActiva", data);
             handlePublicidad()
         })
-        
+         
         socket.on('publicidad', async (publicidadActual) => {
             setPublicidad(await publicidadActual)
            

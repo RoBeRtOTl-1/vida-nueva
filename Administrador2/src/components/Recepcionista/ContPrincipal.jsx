@@ -24,6 +24,10 @@ export default function Recepcionista() {
         navigate('/Recepcionista/Especialidad')
     }
 
+    const hanndleSalir = () => {
+        navigate('/Ventanas')
+    }
+
 
     return (
         <div>
@@ -54,6 +58,17 @@ export default function Recepcionista() {
                     </div>
                 </div>
             </section>
+            <footer>
+                <div className="row">
+                    <div className="col-1 fixed-bottom mb-3 ml-3">
+                        <Button className="bg-danger text-white border border-black text-black"
+                            style={{ width: "100%", height: "100%" }}
+                            onClick={hanndleSalir}>
+                            Volver
+                        </Button>
+                    </div>
+                </div>
+            </footer>
         </div>
     )
 }

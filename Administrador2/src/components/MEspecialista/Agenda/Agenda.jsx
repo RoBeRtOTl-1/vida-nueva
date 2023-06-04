@@ -23,10 +23,10 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { get_Citas_Filtradas_BD } from "../../firebase/Citas/CIT_CRUD";
 import { DataContext } from "../../../context/UserContext";
-import { date_to_ts, formatearFechaHora, getCurrentDate } from '../../firebase/Fechas/Fechas';
+import { date_to_ts, formatearFechaHora, getCurrentDate, ts_to_date } from '../../firebase/Fechas/Fechas';
 import { get_Pacientes_BD } from '../../firebase/Pacientes/PAC_CRUD.js';
-import { DatoDeLaBDFiltrado } from '../../firebase/Ususarios/USU_CRUD.js';
-import { DatoDeLaBD } from '../../firebase/Ususarios/USU_CRUD.js';
+import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD.js';
+
 
 export default function Agenda() {
     //Usamos el useRef para apuntar al calendario
@@ -36,12 +36,21 @@ export default function Agenda() {
     const [open, setOpen] = useState(false)
     const [open2, setOpen2] = useState(false)
 
+    const [pacientes, setPacientes] = useState(new Map())
+    const [dataPac, setDataPac] = useState(null)
+
+    const tipos_sangre = TIPOS_DE_SANGRE();
+
     const { currenUser } = useContext(DataContext) //Ojo poner el DataContext cuando lo deseamos consumir
+
 
     const obtenerDatos = async () => {
         setCurrentCitas(await get_Citas_Filtradas_BD(currenUser.ID_USUARIO))
-        await obtenerMedicos()
-        await obtenerPac()
+
+        const pac = await get_Pacientes_BD()
+        const map = new Map(pac.map(paciente => [paciente.ID, paciente]))
+        setPacientes(map)
+
     }
     useEffect(() => {
         obtenerDatos()
@@ -69,29 +78,37 @@ export default function Agenda() {
         DATEFIN: '',
     }
 
-    const [medAct, setMedAct] = useState(new Map())
-    const [pac, setPac] = useState(new Map())
-
-    const obtenerPac = async () => {
-        const pacientes = await get_Pacientes_BD()
-        setPac(await new Map(pacientes.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
-    }
-
-    const obtenerMedicos = async () => {
-        const med = await DatoDeLaBD();
-        setMedAct(await new Map(med.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
-
-    }
-
     const [dataDate, setDataDate] = useState(initialDatosCita)
 
     const handleDate = (date) => {
-        setDataDate(date.event.extendedProps.data)
-
-        console.log(dataDate)
+        const id = date.event.extendedProps.data.ID_PACIENTES
+        setDataPac(pacientes.get(id))
         setOpen2(true)
+
     }
 
+    const sexos = [
+        { SEXO: "ERROR" },
+        { SEXO: "Hombre" },
+        { SEXO: "Mujer" }
+    ]
+
+    const getAge = (fecha) => {
+        let hoy = new Date()
+        let fechaNacimiento = ts_to_date(fecha)
+        let edad = hoy.getFullYear() - fechaNacimiento.getFullYear()
+        let diferenciaMeses = hoy.getMonth() - fechaNacimiento.getMonth()
+        if (
+            diferenciaMeses < 0 ||
+            (diferenciaMeses === 0 && hoy.getDate() < fechaNacimiento.getDate())
+        ) {
+            edad--
+        }
+
+        console.log(edad)
+        return ""+edad
+
+    }
 
     return (
 
@@ -131,14 +148,16 @@ export default function Agenda() {
                         events={currentCitas}
                         locale={'es'}
 
-                        select={() => { console.log("hola") }}
                         eventClick={(select) => { handleDate(select) }}
                     />
                 </div>
 
                 <Dialog
                     open={open2}
-                    onClose={() => setOpen2(false)}
+                    onClose={() => {
+                        setOpen2(false)
+                        setDataPac(null)
+                    }}
                     aria-labelledby='dialog-title'
                     aria-describedby='dialog-description'
                     PaperProps={{
@@ -151,7 +170,7 @@ export default function Agenda() {
                         <span style={{ color: "black", fontSize: "23px" }}>Datos del paciente</span>
                         <Button onClick={() => {
                             setOpen2(false)
-                            reiniciarFormulario()
+
                         }}>X</Button>
                         <hr />
                     </DialogTitle>
@@ -160,27 +179,135 @@ export default function Agenda() {
 
                         <DialogContentText className='mt-2' id='dialog-description'>
                             <DialogContentText className='' id='dialog-description'>
-                                <div className="row text-center text-black">
 
-                                    <div className="col-12 ">
-                                        <h6>Medico:</h6>
-                                    </div>
-                                    <div className="col-12 ">
-                                        <h2>{dataDate.ID_USUARIO ? medAct.get(dataDate.ID_USUARIO) : ''}</h2>
-                                    </div>
-                                    <div className="col-12 ">
-                                        <h6>Paciente:</h6>
-                                    </div>
-                                    <div className="col-12 ">
-                                        <h2>{dataDate.ID_PACIENTES ? pac.get(dataDate.ID_PACIENTES) : ''}</h2>
-                                    </div>
-                                    <div className="col-12 ">
-                                        <h6>Fecha:</h6>
-                                    </div>
-                                    <div className="col-12 ">
-                                        <h2>{dataDate.DATEINICIO ? formatearFechaHora((dataDate.DATEINICIO)) : 'ño'}</h2>
-                                    </div>
-                                </div>
+                                {
+                                    dataPac ? (
+                                        <div className="row text-center text-black">
+
+                                            <div className='col-6'>
+                                                <Stack spacing={100}>
+                                                    <Stack spacing={2}>
+                                                        <TextField
+                                                            label="Paciente"
+                                                            value={`${dataPac.NOMBRE} ${dataPac.AP_PATERNO} ${dataPac.AP_MATERNO}`}
+
+                                                            variant="standard"
+                                                            InputProps={{
+                                                                readOnly: true,
+                                                            }}
+                                                        />
+                                                    </Stack>
+                                                </Stack>
+                                            </div>
+
+                                            <div className='col-2'>
+                                                <Stack spacing={100}>
+                                                    <Stack spacing={2}>
+                                                        <TextField
+                                                            label="Sexo"
+                                                            value={sexos[parseInt(dataPac.ID_SEXO)].SEXO}
+
+                                                            variant="standard"
+                                                            InputProps={{
+                                                                readOnly: true,
+                                                            }}
+                                                        />
+                                                    </Stack>
+                                                </Stack>
+                                            </div>
+                                            <div className='col-2'>
+                                                <Stack spacing={100}>
+                                                    <Stack spacing={2}>
+                                                        <TextField
+                                                            label="Tipo de sangre"
+                                                            value={tipos_sangre[dataPac.ID_TIP_SANGRE].TIPO_SANGRE}
+
+                                                            variant="standard"
+                                                            InputProps={{
+                                                                readOnly: true,
+                                                            }}
+                                                        />
+                                                    </Stack>
+                                                </Stack>
+                                            </div>
+                                            <div className='col-2'>
+                                                <Stack spacing={100}>
+                                                    <Stack spacing={2}>
+                                                        <TextField
+                                                            label="Edad"
+                                                            value={getAge(dataPac.NACIMIENTO)}
+
+                                                            variant="standard"
+                                                            InputProps={{
+                                                                readOnly: true,
+                                                            }}
+                                                        />
+                                                    </Stack>
+                                                </Stack>
+                                            </div>
+
+                                            <div className='row d-flex'>
+                                                <div className='col-6'>
+                                                    <div className='col-12 mt-4'>
+                                                        <Stack spacing={100}>
+                                                            <Stack spacing={2}>
+                                                                <TextField
+                                                                    label="Alergias"
+                                                                    value={dataPac.ALERGIAS}
+
+                                                                    variant="standard"
+                                                                    multiline
+                                                                    maxRows={5}
+                                                                    InputProps={{
+                                                                        readOnly: true,
+                                                                    }}
+                                                                />
+                                                            </Stack>
+                                                        </Stack>
+                                                    </div>
+                                                </div>
+                                                <div className='col-6'>
+                                                    <div className='col-12 mt-5'>
+                                                        <Stack spacing={100}>
+                                                            <Stack spacing={2}>
+                                                                <TextField
+                                                                    label="Telefono"
+                                                                    value={dataPac.TELEFONO}
+
+                                                                    variant="standard"
+                                                                    InputProps={{
+                                                                        readOnly: true,
+                                                                    }}
+                                                                />
+                                                            </Stack>
+                                                        </Stack>
+                                                    </div>
+
+                                                    <div className='col-12 mt-4'>
+                                                        <Stack spacing={100}>
+                                                            <Stack spacing={2}>
+                                                                <TextField
+                                                                    label="Email"
+                                                                    value={dataPac.EMAIL}
+
+                                                                    variant="standard"
+                                                                    InputProps={{
+                                                                        readOnly: true,
+                                                                    }}
+                                                                />
+                                                            </Stack>
+                                                        </Stack>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    ) : (
+                                        null
+                                    )
+                                }
+
 
                             </DialogContentText>
                         </DialogContentText>
@@ -222,7 +349,7 @@ export default function Agenda() {
                         <span style={{ color: "black", fontSize: "23px" }}>Registar consulta medica</span>
                         <Button onClick={() => {
                             setOpen(false)
-                            reiniciarFormulario()
+
                         }}>X</Button>
                         <hr />
                     </DialogTitle>

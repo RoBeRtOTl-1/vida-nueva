@@ -18,7 +18,7 @@ export default function Modificar({ dato, obtenerDatos }) {
     const [open, setOpen] = useState(false)
     const [nombre, setNombre] = useState(dato.ESPECIALIDAD);
     const [estado, setEstado] = useState(dato.ID_ESTADOS);
-
+    const regex = /^[A-Z\sa-z0-9_]+$/;
     const valoresSeleccionados = {
         nombre,
         estado
@@ -75,7 +75,16 @@ export default function Modificar({ dato, obtenerDatos }) {
                             <div className="col-md-6">
                                 <Stack spacing={100}>
                                     <Stack direction="row" spacing={2}>
-                                        <TextField label="Nombre" value={nombre} size='small' onChange={(e) => setNombre(e.target.value)} />
+                                        <TextField
+                                            label="Nombre"
+                                            value={nombre}
+                                            size='small'
+                                            onChange={(e) => {
+                                                if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                    setNombre(e.target.value)
+                                                }
+                                            }}
+                                        />
                                     </Stack>
                                 </Stack>
                             </div>
@@ -98,10 +107,10 @@ export default function Modificar({ dato, obtenerDatos }) {
                     }} >Modificar</Button>
 
                 </DialogActions>
-            <Toaster
-                position="top-right"
-                reverseOrder={true}
-            />
+                <Toaster
+                    position="top-right"
+                    reverseOrder={true}
+                />
             </Dialog>
         </>
     )

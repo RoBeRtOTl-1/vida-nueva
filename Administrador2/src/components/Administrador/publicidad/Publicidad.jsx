@@ -2,25 +2,27 @@ import React, { useEffect, useState } from "react";
 
 import { _, Grid } from 'gridjs-react';
 import { esES } from "gridjs/l10n";
+import { io } from "socket.io-client";
 
 import Agregar from "./Agregar";
 import Modificar from "./Modificar";
 import Estado from "../estados/Estados";
 
-import { get_BD_Publicidad, vencerPublicidad } from "../../firebase/Publicidad/PUB_CRUD";
+import { get_BD_Publicidad, get_BD_Publicidad_Activos, vencerPublicidad } from "../../firebase/Publicidad/PUB_CRUD";
 import { formatearFechaHora } from "../../firebase/Fechas/Fechas";
 
 export default function Publicidad() {
     const [datos, setDatos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const socket = io("http://localhost:4000");
+
     async function obtenerDatos() {
         setDatos([]);
-
+        
         const  datosBD = await get_BD_Publicidad();
-
         await vencerPublicidad( await datosBD )
-
+        socket.emit('ActualizarPublicidad', await get_BD_Publicidad_Activos() )
         setDatos(datosBD);
         setIsLoading(false);
     }
@@ -73,9 +75,24 @@ export default function Publicidad() {
                                             name:'Descripcion',
                                             width: '30%'
                                         },
-                                        'Fecha terminacion',
-                                        'Estado',
-                                        'Acciones'
+                                        {
+
+                                            name:'Fecha terminacion',
+                                            width: '30%'
+                                        },
+                                        {
+
+                                            name:'Estado',
+                                            width: '10%'
+                                        },
+                                        {
+
+                                            name:'Acciones',
+                                            width: '10%'
+                                        },
+                                        
+                                        
+                                        
                                     ]}
                                     search={true}
 

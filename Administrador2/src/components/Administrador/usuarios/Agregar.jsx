@@ -31,6 +31,9 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
     const [especialidad, setEspecialidad] = useState([]);
     const [roles, setRoles] = useState([]);
 
+    const regex = /^[A-Z\sa-z]+$/;
+    const regexCurp = /[A-Z0-9]+/;
+
     const initialDatosPer = {
         NOMBRE: '',
         AP_MATERNO: '',
@@ -92,13 +95,23 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
     const insertarUSUyDOM = async (evt) => {
         evt.preventDefault(); //Evitamos que se recargue la pagina
 
-        
+        if(datosPer.CEDULA.length != 8 ){
+            toast.error('Cedula invalida')
+            return
+        }
+
+        if(datosPer.TELEFONO.length != 10 ){
+            toast.error('Telefono invalido')
+            return
+        }
+
         if (correos.includes(datosPer.EMAIL)) {  //Revisamos que no exista el correo
             toast.error('EL CORREO YA EXISTE')
         } else {
             if (cedulas.includes(datosPer.CEDULA)) {  //Revisamos que no este en uso la cedula
                 toast.error('LA CEDULA YA ESTA EN USO')
             } else {
+                
                 const ID_DOM = await insertarDom(datosDom);
                 datosPer["ID_DOMICILIO"] = ID_DOM;
                 const ID_USU = await insertarUSU(datosPer)
@@ -156,22 +169,43 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
                             <Stack spacing={3}>
                                 <Stack direction="row" spacing={2}>
                                     <TextField
-                                        required
                                         label="Nombre"
                                         size="small"
-                                        type='text'
-                                        name="NOMBRE" value={datosPer.NOMBRE}
-                                        onChange={(e) => handleDatosPersonales(e)}
-                                    />
-                                    <TextField
+                                        name="NOMBRE"
                                         required
+                                        value={datosPer.NOMBRE}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
+
+                                    <TextField
                                         label="Apellido paterno"
                                         name="AP_PATERNO"
+                                        required
                                         size="small"
                                         value={datosPer.AP_PATERNO}
-                                        onChange={(e) => handleDatosPersonales(e)}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
                                     />
-                                    <TextField required label="Apellido materno" name="AP_MATERNO" size="small" value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
+
+                                    <TextField
+                                        label="Apellido materno"
+                                        name="AP_MATERNO"
+                                        required
+                                        size="small"
+                                        value={datosPer.AP_MATERNO}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
                                     <TextField required size='small' name="ID_ESPECIALIDAD" label="Especialidad" select value={datosPer.ID_ESPECIALIDAD} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
                                         {especialidad.map((dato, index) => (
@@ -181,8 +215,32 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
 
                                 </Stack>
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required type='number' label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
-                                    <TextField required label="Cedula" name="CEDULA" size="small" value={datosPer.CEDULA} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField
+                                        required
+                                        type="number"
+                                        label="Telefono"
+                                        name='TELEFONO'
+                                        size="small"
+                                        value={datosPer.TELEFONO}
+                                        onChange={(e) => {
+                                            if (datosPer.TELEFONO.length < 10 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosPersonales(e)
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        label="Cedula"
+                                        name="CEDULA"
+                                        size="small"
+                                        value={datosPer.CEDULA}
+                                        type="number"
+                                        onChange={(e) => {
+                                            if (datosPer.CEDULA.length < 8 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosPersonales(e)
+                                            }
+                                        }}
+                                    />
 
                                     <TextField required size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
                                         onChange={(e) => handleDatosPersonales(e)}>
@@ -191,7 +249,11 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
                                     </TextField>
 
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DatePicker label="Fecha de nacimiento" onChange={(newValue) => handleDate(newValue)} />
+                                        <DatePicker
+                                            disableFuture={true}
+                                            label="Fecha de nacimiento"
+                                            onChange={(newValue) => handleDate(newValue)}
+                                        />
                                     </LocalizationProvider>
 
 
@@ -200,22 +262,107 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
                                 <h5 style={{ color: "black" }}>Domicilio</h5>
                                 <hr />
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField required label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField required label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField required label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField
+                                        required
+                                        label="Ciudad"
+                                        size="small"
+                                        name="CIUDAD"
+                                        value={datosDom.CIUDAD}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e);
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        label="Colonia"
+                                        size="small"
+                                        name="COLONIA"
+                                        value={datosDom.COLONIA}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e);
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        type="number"
+                                        label="Codigo postal"
+                                        size="small"
+                                        name="COD_POSTAL"
+                                        value={datosDom.COD_POSTAL}
+                                        onChange={(e) => {
+                                            if (datosDom.COD_POSTAL.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+
+                                    />
+                                    <TextField
+                                        required
+                                        label="Calle"
+                                        size="small"
+                                        name="CALLE"
+                                        value={datosDom.CALLE}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+                                    />
                                 </Stack>
 
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                    <TextField label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
+                                    <TextField
+                                        type="number"
+                                        required
+                                        label="Num. Exterior"
+                                        size="small"
+                                        name="NUM_EXTERIOR"
+                                        value={datosDom.NUM_EXTERIOR}
+                                        onChange={(e) => {
+                                            if (datosDom.NUM_EXTERIOR.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        type="number"
+                                        label="Num. Interior"
+                                        size="small"
+                                        name="NUM_INTERIOR"
+                                        value={datosDom.NUM_INTERIOR}
+                                        onChange={(e) => {
+                                            if (datosDom.NUM_INTERIOR.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+                                    />
                                 </Stack>
 
                                 <h5 style={{ color: "black" }}>Datos de cuenta</h5>
                                 <hr />
                                 <Stack direction="row" spacing={2}>
-                                    <TextField required type='email' label="ejemplo@vn.system.com" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                    <TextField required type='password' label="contraseña" size="small" name="CLAVE" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField
+                                        required
+                                        type='email'
+                                        label="ejemplo@vn.system.com"
+                                        size="small"
+                                        name="EMAIL"
+                                        value={datosPer.EMAIL}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                    />
+                                    <TextField
+                                        required
+                                        type='password'
+                                        label="contraseña"
+                                        size="small"
+                                        name="CLAVE"
+                                        value={datosPer.CLAVE}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                    />
 
                                     <TextField required size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}
                                         onChange={(e) => handleDatosPersonales(e)}>
@@ -228,9 +375,10 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
                             </Stack>
                         </DialogContentText>
                     </DialogContent>
-
                     <DialogActions className='align-middle'>
-                        <Button className='bg-success text-white' type="submit" >Guardar</Button>
+                        <Button
+                            className='bg-success text-white'
+                            type="submit" >Guardar</Button>
                     </DialogActions>
                 </Box>
             </Dialog>

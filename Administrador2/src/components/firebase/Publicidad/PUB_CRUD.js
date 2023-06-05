@@ -2,10 +2,10 @@ import { date_to_ts, ts_to_date } from "../Fechas/Fechas";
 import { db } from "../firebase"
 import { collection, addDoc, getDocs, setDoc, doc, query, where, updateDoc, and } from "firebase/firestore";
 
-export function insertarPublicidad(datos) {
+export async function  insertarPublicidad(datos) {
     console.log(datos)
     try {
-        const newPublicidad = addDoc(collection(db, 'PUBLICIDAD'), {
+        const newPublicidad = await addDoc(collection(db, 'PUBLICIDAD'), {
             "NOMBRE": datos.NOMBRE,
             "DESCRIPCION": datos.DESCRIPCION,
             "TIEMPO": datos.TIEMPO,

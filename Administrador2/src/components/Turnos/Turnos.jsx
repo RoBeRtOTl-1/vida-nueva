@@ -28,12 +28,14 @@ export default function Turnos() {
 
         get_BD_Publicidad_Activos().then((data) => {
             socket.emit("PublicidadActiva", data);
-            handlePublicidad()
+            
         })
          
         socket.on('publicidad', async (publicidadActual) => {
+            setPublicidad(null)
             setPublicidad(await publicidadActual)
-           
+            console.log(publicidadActual)
+            handlePublicidad()
             setIsLoading(false)
         })
 

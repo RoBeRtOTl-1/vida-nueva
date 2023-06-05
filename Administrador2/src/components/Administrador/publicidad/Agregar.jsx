@@ -4,7 +4,8 @@ import {
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions
+    DialogActions,
+    Box
 } from '@mui/material'
 import React, { useState } from 'react'
 
@@ -33,7 +34,7 @@ export default function Agregar({ obtenerDatos }) {
         ID_ESTADOS: '',
         URL: ''
     }
-
+    const regex = /^[A-Z\sa-z0-9\-]+$/;
     const [datosPB, setDatosPB] = useState(initialDatosPB)
 
     const handleChange = (newFile) => {
@@ -45,20 +46,43 @@ export default function Agregar({ obtenerDatos }) {
         setDatosPB({ ...datosPB, [event.target.name]: event.target.value })
     }
 
-    const handleDate = (newValue) =>{
+    const handleDate = (newValue) => {
         datosPB["FECHA_TERMINACION"] = date_to_ts(newValue)
     }
 
-    const ins_Pub = async () =>{
+    const saveImg = async () => {
         const url = await uploadFile(file)
-        datosPB['URL'] = url ;
-        await insertarPublicidad(datosPB)
+        datosPB['URL'] = url;
+    }
 
-        setDatosPB(initialDatosPB)
-        setFile('')
-        setPreviewUrl(null)
+    const hanndleInsert = async (evt) => {
+        evt.preventDefault(); //Evitamos que se recargue la pagina
 
-        toast.success('Publicidad guardada')
+        if(datosPB)
+        //Verificamos que se haya seleccionado una fecha
+        if (datosPB.FECHA_TERMINACION) {
+            if (file) {
+                //Primero insertamos la imagen y guardamos el URL en los datos
+                // de la publicidad
+                await saveImg()
+                //Depues ya guardamos la publicidad
+                await insertarPublicidad(datosPB)
+                setDatosPB(initialDatosPB)
+                setFile('')
+                setPreviewUrl(null)
+
+                setOpen(false)
+                obtenerDatos()
+                toast.success('Publicidad guardada')
+
+            } else {
+                toast.error('FALTA IMAGEN')
+            }
+        } else {
+            toast.error('FALTA FECHA DE TERMINACION')
+        }
+
+
 
     }
 
@@ -67,7 +91,12 @@ export default function Agregar({ obtenerDatos }) {
             <Button style={{ backgroundColor: "#0048FF", color: "white" }} onClick={() => setOpen(true)}>Agregar</Button>
             <Dialog
                 open={open}
-                onClose={() => setOpen(false)}
+                onClose={() => {
+                    setOpen(false)
+                    setDatosPB(initialDatosPB)
+                    setFile('')
+                    setPreviewUrl(null)
+                }}
                 aria-labelledby='dialog-title'
                 aria-describedby='dialog-description'
                 PaperProps={{
@@ -82,56 +111,104 @@ export default function Agregar({ obtenerDatos }) {
 
                     <Button onClick={() => {
                         setOpen(false)
-                        reiniciarFormulario()
+                        setDatosPB(initialDatosPB)
+                        setFile('')
+                        setPreviewUrl(null)
                     }}>X</Button>
+
                     <hr />
                 </DialogTitle>
 
-                <DialogContent>
 
-                    <DialogContentText className='mt-2' id='dialog-description'>
-                        <div className=' row'>
-                            <div className='col-6 d-flex align-items-center'>
-                                <Stack spacing={3}>
-                                    <Stack spacing={2}>
-                                        <TextField label="Nombre" name='NOMBRE' onChange={(e) => handleDataP(e)} />
+                <Box
+                    component='form'
+                    onSubmit={hanndleInsert}
+                >
+                    <DialogContent>
+                        <DialogContentText className='mt-2' id='dialog-description'>
+                            <div className=' row'>
+                                <div className='col-6 d-flex align-items-center'>
+                                    <Stack spacing={3}>
+                                        <Stack spacing={2}>
+                                            <TextField
+                                                label="Nombre"
+                                                name='NOMBRE'
+                                                required
+                                                value={datosPB.NOMBRE}
+                                                onChange={(e) => {
+                                                    if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                        handleDataP(e)
+                                                    }
+                                                }}
+
+                                            />
+                                        </Stack>
+                                        <Stack spacing={2}>
+                                            <TextField
+                                                label="Descripcion"
+                                                name='DESCRIPCION'
+                                                multiline
+                                                rows={6}
+                                                required
+                                                value={datosPB.DESCRIPCION}
+                                                onChange={(e) => {
+                                                    if ((e.target.value.length < 150 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                        handleDataP(e)
+                                                    }
+                                                }}
+                                            />
+                                        </Stack>
+                                        <Stack direction="row" spacing={2}>
+                                            <TextField
+                                                label="Tiempo (seg)"
+                                                name='TIEMPO'
+                                                type='number'
+                                                required
+                                                value={datosPB.TIEMPO}
+                                                onChange={(e) => {
+                                                    if ((e.target.value.length < 4 && parseInt(e.target.value) <= 180 && parseInt(e.target.value) > 0) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                        handleDataP(e)
+                                                    }
+                                                }}
+                                            />
+
+                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                <DatePicker
+                                                    disablePast={true}
+                                                    label="Fecha de terminacion"
+                                                    onChange={(newValue) => handleDate(newValue)}
+                                                />
+                                            </LocalizationProvider>
+
+                                        </Stack>
+
                                     </Stack>
-                                    <Stack spacing={2}>
-                                        <TextField label="Descripcion" name='DESCRIPCION' multiline rows={6} onChange={(e) => handleDataP(e)} />
-                                    </Stack>
-                                    <Stack direction="row" spacing={2}>
-                                        <TextField label="Tiempo (seg)" name='TIEMPO' onChange={(e) => handleDataP(e)} />
 
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker label="Fecha de terminacion" onChange={(newValue) => handleDate(newValue)} />
-                                        </LocalizationProvider>
-
-                                    </Stack>
-
-                                </Stack>
+                                </div>
+                                <div className='col-6'>
+                                    <Image
+                                        src={previewUrl}
+                                        width={500}
+                                        height={500}
+                                        duration={0}
+                                        required
+                                        fit={"contain"}
+                                    />
+                                    <MuiFileInput value={file} onChange={handleChange} />
+                                </div>
 
                             </div>
-                            <div className='col-6'>
-                                <Image src={previewUrl} width={500} height={500} duration={0} fit={"contain"} />
-                                <MuiFileInput value={file} onChange={handleChange} />
-                            </div>
-
-                        </div>
 
 
-                    </DialogContentText>
-                </DialogContent>
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions className='align-middle'>
+                        <Button
+                            className='bg-success text-white'
+                            type="submit" >Guardar</Button>
 
-                <DialogActions className='align-middle'>
-                    <Button className='bg-success text-white' onClick={async () => {
-                        setOpen(false)
-                        await ins_Pub()
-                        //await insertar(valoresSeleccionados)
-                        obtenerDatos()
-                        // reiniciarFormulario()
-                    }} >Guardar</Button>
-
-                </DialogActions>
+                    </DialogActions>
+                </Box>
             </Dialog>
             <Toaster
                 position="top-right"

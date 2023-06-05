@@ -57,7 +57,7 @@ export async function actualizarDom(id, datos) {
         NUM_EXTERIOR: datos.NUM_EXTERIOR,
         NUM_INTERIOR: datos.NUM_INTERIOR
     });
-    alert("DOMICILIO ACTUALIZADO")
+
 }
 
 

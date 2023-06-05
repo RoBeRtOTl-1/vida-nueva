@@ -4,7 +4,8 @@ import {
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions
+    DialogActions,
+    Box
 } from '@mui/material'
 import React, { useState } from 'react'
 
@@ -18,10 +19,11 @@ import { actualizarPublicidad } from '../../firebase/Publicidad/PUB_CRUD';
 import dayjs from 'dayjs';
 import { Toaster, toast } from "react-hot-toast"
 
-export default function Modificar({ datos ,obtenerDatos }) {
+export default function Modificar({ datos, obtenerDatos }) {
     const [open, setOpen] = useState(false)
     const [file, setFile] = useState('')
-    // const [previewUrl, setPreviewUrl] = useState(null)
+
+    const regex = /^[A-Z\sa-z0-9\-]+$/;
 
     const [datosPB, setDatosPB] = useState({
         NOMBRE: datos.NOMBRE,
@@ -50,6 +52,17 @@ export default function Modificar({ datos ,obtenerDatos }) {
         obtenerDatos()
         toast.success('Publicidad modificada')
 
+    }
+
+    const hanndleUpdate = async (evt) => {
+        evt.preventDefault()
+        if (datosPB.TIEMPO == '0') {
+            toast.error('TIEMPO INVALIDO')
+        } else {
+
+            setOpen(false)
+            await ins_Pub()
+        }
     }
 
     return (
@@ -81,55 +94,89 @@ export default function Modificar({ datos ,obtenerDatos }) {
                     }}>X</Button>
                     <hr />
                 </DialogTitle>
+                <Box
+                    component='form'
+                    onSubmit={hanndleUpdate}
+                >
 
-                <DialogContent>
+                    <DialogContent>
 
-                    <DialogContentText className='mt-2' id='dialog-description'>
-                        <div className=' row'>
-                            <div className='col-6 d-flex align-items-center'>
-                                <Stack spacing={3}>
-                                    <Stack spacing={2}>
-                                        <TextField label="Nombre" value={datosPB.NOMBRE} name='NOMBRE' onChange={(e) => handleDataP(e)} />
-                                    </Stack>
-                                    <Stack spacing={2}>
-                                        <TextField label="Descripcion" value={datosPB.DESCRIPCION} name='DESCRIPCION' multiline rows={6} onChange={(e) => handleDataP(e)} />
-                                    </Stack>
-                                    <Stack direction="row" spacing={2}>
-                                        <TextField label="Tiempo (seg)" value={datosPB.TIEMPO} name='TIEMPO' onChange={(e) => handleDataP(e)} />
-
-                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker 
-                                            label="Fecha de terminacion" 
-                                            defaultValue={dayjs(ts_to_date(datosPB.FECHA_TERMINACION))} 
-                                            onChange={(newValue) => handleDate(newValue)} 
-                                            disablePast={true}
+                        <DialogContentText className='mt-2' id='dialog-description'>
+                            <div className=' row'>
+                                <div className='col-6 d-flex align-items-center'>
+                                    <Stack spacing={3}>
+                                        <Stack spacing={2}>
+                                            <TextField
+                                                label="Nombre"
+                                                value={datosPB.NOMBRE}
+                                                name='NOMBRE'
+                                                required
+                                                onChange={(e) => {
+                                                    if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                        handleDataP(e)
+                                                    }
+                                                }}
                                             />
-                                        </LocalizationProvider>
+                                        </Stack>
+                                        <Stack spacing={2}>
+                                            <TextField
+                                                label="Descripcion"
+                                                value={datosPB.DESCRIPCION}
+                                                name='DESCRIPCION'
+                                                multiline
+                                                rows={6}
+                                                required
+                                                onChange={(e) => {
+                                                    if ((e.target.value.length < 150 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                        handleDataP(e)
+                                                    }
+                                                }}
+                                            />
+                                        </Stack>
+                                        <Stack direction="row" spacing={2}>
+                                            <TextField
+                                                label="Tiempo (seg)"
+                                                value={datosPB.TIEMPO}
+                                                name='TIEMPO'
+                                                required
+                                                onChange={(e) => {
+                                                    if ((e.target.value.length < 4 && parseInt(e.target.value) <= 180 && parseInt(e.target.value) > 0) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                        handleDataP(e)
+                                                    }
+                                                }}
+                                            />
+
+                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                <DatePicker
+                                                    label="Fecha de terminacion"
+                                                    defaultValue={dayjs(ts_to_date(datosPB.FECHA_TERMINACION))}
+                                                    onChange={(newValue) => handleDate(newValue)}
+                                                    disablePast={true}
+                                                />
+                                            </LocalizationProvider>
+
+                                        </Stack>
 
                                     </Stack>
 
-                                </Stack>
+                                </div>
+                                <div className='col-6'>
+                                    <Image src={datosPB.URL} width={500} height={500} duration={0} fit={"contain"} />
+                                    {/* <MuiFileInput value={file} onChange={handleChange} /> */}
+                                </div>
 
                             </div>
-                            <div className='col-6'>
-                                <Image src={datosPB.URL} width={500} height={500} duration={0} fit={"contain"} />
-                                {/* <MuiFileInput value={file} onChange={handleChange} /> */}
-                            </div>
-
-                        </div>
 
 
-                    </DialogContentText>
-                </DialogContent>
+                        </DialogContentText>
+                    </DialogContent>
 
-                <DialogActions className='align-middle'>
-                    <Button className='bg-success text-white' onClick={async () => {
-                        setOpen(false)
-                        await ins_Pub()
-                        
-                    }} >Guardar</Button>
+                    <DialogActions className='align-middle'>
+                        <Button className='bg-success text-white'
+                            type='submit' >Guardar</Button>
 
-                </DialogActions>
+                    </DialogActions>
+                </Box>
             </Dialog>
             <Toaster
                 position="top-right"

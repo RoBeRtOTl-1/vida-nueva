@@ -86,7 +86,7 @@ export async function actualizarUsuario(id, datos) {
         TELEFONO: datos.TELEFONO,
         ID_ESTADOS: parseInt(datos.ID_ESTADOS)
     });
-    alert("USUARIO ACTUALIZADO")
+    
 }
 
 

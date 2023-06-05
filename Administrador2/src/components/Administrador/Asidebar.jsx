@@ -10,12 +10,14 @@ import Especialidades from "./especialidades/Especialidades"
 
 import Citas from "./citas/Citas"
 import Estadisticas from "./estadisticas/Estadisticas";
+import { get_BD_Publicidad, vencerPublicidad } from "../firebase/Publicidad/PUB_CRUD";
 
 
 export default function Asidebar() {
 
     const [fechaHora, setFechaHora] = useState('');
     useEffect(() => {
+        updatePublicidad()
         function mostrarFechaHora() {
             const fecha = new Date();
             const dia = fecha.getDate();
@@ -29,6 +31,11 @@ export default function Asidebar() {
         const intervalId = setInterval(mostrarFechaHora, 1000);
         return () => clearInterval(intervalId);
     }, []);
+
+    async function updatePublicidad() {
+        const  datosBD = await get_BD_Publicidad();
+        await vencerPublicidad( await datosBD )
+    }
 
     const [title, setTitle] = useState("Turnos del día")
     const [image, setImage] = useState()

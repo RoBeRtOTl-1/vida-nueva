@@ -17,6 +17,7 @@ import { insertar } from "../../firebase/Especialides/ESP_CRUD.js"
 export default function Agregar({ obtenerDatos, BDesp }) {
     const [open, setOpen] = useState(false)
     const [nombre, setNombre] = useState('');
+    const regex = /^[A-Z\sa-z0-9_]+$/;
 
     const valores = {
         nombre
@@ -42,7 +43,7 @@ export default function Agregar({ obtenerDatos, BDesp }) {
             toast.error('INGRESE UNA ESPECIALIDAD')
         }
     }
-    
+
     return (
         <div>
             <Button style={{ backgroundColor: "#0048FF", color: "white" }} onClick={() => setOpen(true)}>Agregar</Button>
@@ -78,7 +79,15 @@ export default function Agregar({ obtenerDatos, BDesp }) {
                     <DialogContentText className='mt-2' id='dialog-description'>
                         <Stack spacing={100}>
                             <Stack direction="row" spacing={2}>
-                                <TextField label="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                                <TextField
+                                    label="Nombre"
+                                    value={nombre}
+                                    onChange={(e) => {
+                                        if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                            setNombre(e.target.value)
+                                        }
+                                    }}
+                                />
                             </Stack>
                         </Stack>
                     </DialogContentText>

@@ -31,6 +31,8 @@ export default function Agregar({ obtenerDatos, tdu }) {
         especialista,
     };
 
+    const regex = /^[A-Z\sa-z0-9_]+$/;
+
     function reiniciarFormulario() {
         setAdmin(false)
         setRecepcion(false)
@@ -85,7 +87,17 @@ export default function Agregar({ obtenerDatos, tdu }) {
                     <DialogContentText className='mt-2' id='dialog-description'>
                         <Stack spacing={100}>
                             <Stack direction="row" spacing={2}>
-                                <TextField label="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                                <TextField
+                                    label="Nombre"
+                                    value={nombre}
+                                    onChange={(e) => {
+                                        if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                            setNombre(e.target.value)
+                                        }
+                                    }}
+
+                                />
+
                             </Stack>
                         </Stack>
 

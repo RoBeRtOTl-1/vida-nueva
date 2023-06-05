@@ -527,13 +527,11 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                         name='TELEFONO'
                                         size="small"
                                         value={datosPer.TELEFONO}
-
                                         onChange={(e) => {
                                             if (datosPer.TELEFONO.length < 10 | e.nativeEvent.inputType == "deleteContentBackward") {
                                                 handleDatosPersonales(e)
                                             }
                                         }}
-
                                     />
                                     <TextField
                                         required label="CURP"
@@ -643,7 +641,6 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                                 handleDatosDomicilio(e)
                                             }
                                         }}
-
                                     />
                                 </Stack>
 
@@ -660,7 +657,6 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                                 handleDatosDomicilio(e)
                                             }
                                         }}
-
                                     />
                                     <TextField
                                         type="number"
@@ -673,7 +669,6 @@ const AgregarCitaEspecialidad = ({ especialidad, id }) => {
                                                 handleDatosDomicilio(e)
                                             }
                                         }}
-
                                     />
                                 </Stack>
 

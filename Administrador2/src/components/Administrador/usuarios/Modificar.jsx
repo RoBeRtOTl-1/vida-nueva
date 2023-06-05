@@ -5,7 +5,9 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
-    MenuItem
+    MenuItem,
+    Box,
+    Divider
 } from '@mui/material'
 
 
@@ -13,6 +15,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Timestamp } from 'firebase/firestore';
+import { Toaster, toast } from "react-hot-toast"
 
 import { useState, useEffect } from 'react'
 import { Stack, TextField } from '@mui/material'
@@ -29,6 +32,8 @@ export default function Modificar({ dato, obtenerDatos }) {
     const [open, setOpen] = useState(false)
     const [especialidad, setEspecialidad] = useState([]);
     const [roles, setRoles] = useState([]);
+
+    const regex = /^[A-Z\sa-z]+$/;
 
     const [datosPer, setDatosPer] = useState({
         NOMBRE: dato.NOMBRE,
@@ -54,7 +59,7 @@ export default function Modificar({ dato, obtenerDatos }) {
         NUM_INTERIOR: dato.NUM_INTERIOR,
         NUM_EXTERIOR: dato.NUM_EXTERIOR
     })
-    
+
     //usar ...
 
     function handleDatosPersonales(event) {
@@ -72,7 +77,7 @@ export default function Modificar({ dato, obtenerDatos }) {
 
     useEffect(() => {
         obtenerEspecialidades()
-        obtenerRoles()        
+        obtenerRoles()
     }, []);
 
     async function obtenerEspecialidades() {
@@ -83,9 +88,25 @@ export default function Modificar({ dato, obtenerDatos }) {
         setRoles(await tdu_Activos());
     }
 
-    async function insertarUSUyDOM() {
+    async function insertarUSUyDOM(evt) {
+        evt.preventDefault(); //Evitamos que se recargue la pagina
+
+        if (datosPer.CEDULA.length != 8) {
+            toast.error('Cedula invalida')
+            return
+        }
+
+        if (datosPer.TELEFONO.length != 10) {
+            toast.error('Telefono invalido')
+            return
+        }
+
+
         await actualizarDom(dato.ID_DOMICILIO, datosDom);
         await actualizarUsuario(dato.ID, datosPer)
+        toast.success("Usuario actualizado")
+        setOpen(false)
+        obtenerDatos()
     }
 
 
@@ -108,92 +129,242 @@ export default function Modificar({ dato, obtenerDatos }) {
                     },
                 }}>
 
-                <DialogTitle id='dialog-title'>
-                    <span style={{ color: "black", fontSize: "23px" }}>Datos personales</span>
-                    <Button onClick={() => {
-                        setOpen(false)
-                        reiniciarFormulario()
-                    }}>X</Button>
-                    <hr />
-                </DialogTitle>
+                <Box
+                    component='form'
+                    onSubmit={insertarUSUyDOM}
+                >
+                    <DialogTitle id='dialog-title'>
+                        <span style={{ color: "black", fontSize: "23px" }}>Datos personales</span>
+                        <Button onClick={() => {
+                            setOpen(false)
+                        }}>X</Button>
+                        <Divider />
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText className='mt-2' id='dialog-description'>
+                            <Stack spacing={3}>
+                                <Stack direction="row" spacing={2}>
+                                    <TextField
+                                        label="Nombre"
+                                        size="small"
+                                        name="NOMBRE"
+                                        required
+                                        value={datosPer.NOMBRE}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
-                <DialogContent>
+                                    <TextField
+                                        label="Apellido paterno"
+                                        name="AP_PATERNO"
+                                        required
+                                        size="small"
+                                        value={datosPer.AP_PATERNO}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
-                    <DialogContentText className='mt-2' id='dialog-description'>
-                        <Stack spacing={3}>
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Nombre" size="small" name="NOMBRE" value={datosPer.NOMBRE} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="Apellido paterno" name="AP_PATERNO" size="small" value={datosPer.AP_PATERNO} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="Apellido materno" name="AP_MATERNO" size="small" value={datosPer.AP_MATERNO} onChange={(e) => handleDatosPersonales(e)} />
+                                    <TextField
+                                        label="Apellido materno"
+                                        name="AP_MATERNO"
+                                        required
+                                        size="small"
+                                        value={datosPer.AP_MATERNO}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosPersonales(e);
+                                            }
+                                        }}
+                                    />
 
-                                <TextField size='small' name="ID_ESPECIALIDAD" label="Especialidad" select value={datosPer.ID_ESPECIALIDAD} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
-                                    {especialidad.map((dato, index) => (
-                                        <MenuItem key={index} value={dato.ID} >{dato.ESPECIALIDAD}</MenuItem>
-                                    ))}
-                                </TextField>
+                                    <TextField required size='small' name="ID_ESPECIALIDAD" label="Especialidad" select value={datosPer.ID_ESPECIALIDAD} style={{ minWidth: '250px' }} onChange={(e) => handleDatosPersonales(e)}>
+                                        {especialidad.map((dato, index) => (
+                                            <MenuItem key={index} value={dato.ID} >{dato.ESPECIALIDAD}</MenuItem>
+                                        ))}
+                                    </TextField>
+
+                                </Stack>
+                                <Stack direction="row" spacing={2}>
+                                    <TextField
+                                        required
+                                        type="number"
+                                        label="Telefono"
+                                        name='TELEFONO'
+                                        size="small"
+                                        value={datosPer.TELEFONO}
+                                        onChange={(e) => {
+                                            if (datosPer.TELEFONO.length < 10 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosPersonales(e)
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        label="Cedula"
+                                        name="CEDULA"
+                                        size="small"
+                                        value={datosPer.CEDULA}
+                                        type="number"
+                                        onChange={(e) => {
+                                            if (datosPer.CEDULA.length < 8 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosPersonales(e)
+                                            }
+                                        }}
+                                    />
+
+                                    <TextField required size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
+                                        onChange={(e) => handleDatosPersonales(e)}>
+                                        <MenuItem value="1">Hombre</MenuItem>
+                                        <MenuItem value="2">Mujer</MenuItem>
+                                    </TextField>
+
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            disableFuture={true}
+                                            label="Fecha de nacimiento"
+                                            size="small"
+                                            defaultValue={dayjs(ts_to_date(datosPer.NACIMIENTO))}
+                                            onChange={(newValue) => handleDate(newValue)}
+                                        />
+                                    </LocalizationProvider>
+
+
+
+                                </Stack>
+
+                                <h5 style={{ color: "black" }}>Domicilio</h5>
+                                <Divider />
+                                <Stack direction="row" spacing={2}>
+                                    <TextField
+                                        required
+                                        label="Ciudad"
+                                        size="small"
+                                        name="CIUDAD"
+                                        value={datosDom.CIUDAD}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e);
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        label="Colonia"
+                                        size="small"
+                                        name="COLONIA"
+                                        value={datosDom.COLONIA}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e);
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        required
+                                        type="number"
+                                        label="Codigo postal"
+                                        size="small"
+                                        name="COD_POSTAL"
+                                        value={datosDom.COD_POSTAL}
+                                        onChange={(e) => {
+                                            if (datosDom.COD_POSTAL.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+
+                                    />
+                                    <TextField
+                                        required
+                                        label="Calle"
+                                        size="small"
+                                        name="CALLE"
+                                        value={datosDom.CALLE}
+                                        onChange={(e) => {
+                                            if ((e.target.value.length < 30 && regex.test(e.target.value)) || e.nativeEvent.inputType === "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+                                    />
+                                </Stack>
+
+                                <Stack direction="row" spacing={2}>
+                                    <TextField
+                                        type="number"
+                                        required
+                                        label="Num. Exterior"
+                                        size="small"
+                                        name="NUM_EXTERIOR"
+                                        value={datosDom.NUM_EXTERIOR}
+                                        onChange={(e) => {
+                                            if (datosDom.NUM_EXTERIOR.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        type="number"
+                                        label="Num. Interior"
+                                        size="small"
+                                        name="NUM_INTERIOR"
+                                        value={datosDom.NUM_INTERIOR}
+                                        onChange={(e) => {
+                                            if (datosDom.NUM_INTERIOR.length < 5 || e.nativeEvent.inputType == "deleteContentBackward") {
+                                                handleDatosDomicilio(e)
+                                            }
+                                        }}
+                                    />
+                                </Stack>
+
+                                <h5 style={{ color: "black" }}>Datos de cuenta</h5>
+                                <Divider />
+                                <Stack direction="row" spacing={2}>
+                                    <TextField
+                                        required
+                                        type='email'
+                                        label="ejemplo@vn.system.com"
+                                        size="small"
+                                        name="EMAIL"
+                                        value={datosPer.EMAIL}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                    />
+                                    <TextField
+                                        required
+                                        type='password'
+                                        label="contraseña"
+                                        size="small"
+                                        name="CLAVE"
+                                        value={datosPer.CLAVE}
+                                        onChange={(e) => handleDatosPersonales(e)}
+                                    />
+
+                                    <TextField required size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}
+                                        onChange={(e) => handleDatosPersonales(e)}>
+                                        {roles.map((dato, index) => (
+                                            <MenuItem key={index} value={dato.ID} >{dato.NOMBRE}</MenuItem>
+                                        ))}
+                                    </TextField>
+                                </Stack>
 
                             </Stack>
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Telefono" name='TELEFONO' size="small" value={datosPer.TELEFONO} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField label="CEDULA" name="CEDULA" size="small" value={datosPer.CEDULA} onChange={(e) => handleDatosPersonales(e)} />
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions className='align-middle'>
+                        <Button
+                            className='bg-success text-white'
+                            type="submit" >Guardar</Button>
+                    </DialogActions>
+                </Box>
 
-                                <TextField size='small' name="ID_SEXO" label="Sexo" select value={datosPer.ID_SEXO} style={{ minWidth: '200px' }}
-                                    onChange={(e) => handleDatosPersonales(e)}>
-                                    <MenuItem value="1">Hombre</MenuItem>
-                                    <MenuItem value="2">Mujer</MenuItem>
-                                </TextField>
-
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <DatePicker size="small" defaultValue={dayjs(ts_to_date(datosPer.NACIMIENTO))} onChange={(newValue) => handleDate(newValue)} />
-                                </LocalizationProvider>
-                            </Stack>
-
-                            <h5 style={{ color: "black" }}>Domicilio</h5>
-                            <hr />
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Ciudad" size="small" name="CIUDAD" value={datosDom.CIUDAD} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Colonia" size="small" name="COLONIA" value={datosDom.COLONIA} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Codigo postal" size="small" name="COD_POSTAL" value={datosDom.COD_POSTAL} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Calle" size="small" name="CALLE" value={datosDom.CALLE} onChange={(e) => handleDatosDomicilio(e)} />
-                            </Stack>
-
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="Num. Exterior" size="small" name="NUM_EXTERIOR" value={datosDom.NUM_EXTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                                <TextField label="Num. Interior" size="small" name="NUM_INTERIOR" value={datosDom.NUM_INTERIOR} onChange={(e) => handleDatosDomicilio(e)} />
-                            </Stack>
-
-                            <h5 style={{ color: "black" }}>Datos de cuenta</h5>
-                            <hr />
-                            <Stack direction="row" spacing={2}>
-                                <TextField label="ejemplo@vn.system.com" size="small" name="EMAIL" value={datosPer.EMAIL} onChange={(e) => handleDatosPersonales(e)} />
-                                <TextField type='password' label="contraseña" size="small" name="CLAVE" value={datosPer.CLAVE} onChange={(e) => handleDatosPersonales(e)} />
-
-                                <TextField size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}
-                                    onChange={(e) => handleDatosPersonales(e)}>
-                                    {roles.map((dato, index) => (
-                                        <MenuItem key={index} value={dato.ID} >{dato.NOMBRE}</MenuItem>
-                                    ))}
-                                </TextField>
-
-                                <TextField size='small' label="ESTADO" name="ID_ESTADOS" select fullWidth value={datosPer.ID_ESTADOS} style={{ width: '30%' }}
-                                    onChange={(e) => handleDatosPersonales(e)}>
-                                    <MenuItem value="1">Activo</MenuItem>
-                                    <MenuItem value="2">Inactivo</MenuItem>
-                                </TextField>
-                            </Stack>
-
-                        </Stack>
-                    </DialogContentText>
-                </DialogContent>
-
-                <DialogActions className='align-middle'>
-                    <Button className='bg-success text-white' onClick={async () => {
-                        setOpen(false)
-                        await insertarUSUyDOM()
-                        await obtenerDatos()
-                    }} >Guardar</Button>
-
-                </DialogActions>
+                <Toaster
+                    position="top-right"
+                    reverseOrder={true}
+                />
             </Dialog>
         </div>
     )

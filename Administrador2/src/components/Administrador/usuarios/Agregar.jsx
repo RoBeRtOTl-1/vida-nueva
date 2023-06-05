@@ -6,7 +6,8 @@ import {
     DialogContentText,
     DialogActions,
     MenuItem,
-    Box
+    Box,
+    InputAdornment
 } from '@mui/material'
 
 
@@ -86,6 +87,19 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
 
     async function obtenerEspecialidades() {
         setEspecialidad(await DatoDeLaBDActivos());
+    }
+
+    const [kindInput, setKindInput] = useState("password")
+    const [icon, setIcon] = useState('bi bi-eye-slash')
+
+    const handleIcon = () => {
+        if (icon == "bi bi-eye-slash"){
+            setIcon("bi bi-eye")
+            setKindInput("text")
+        }else{
+            setIcon("bi bi-eye-slash")
+            setKindInput("password")
+        }
     }
 
     async function obtenerRoles() {
@@ -356,12 +370,21 @@ export default function Agregar({ obtenerDatos, cedulas, correos }) {
                                     />
                                     <TextField
                                         required
-                                        type='password'
+                                        type={kindInput}
                                         label="contraseña"
                                         size="small"
                                         name="CLAVE"
                                         value={datosPer.CLAVE}
                                         onChange={(e) => handleDatosPersonales(e)}
+                                        InputProps={{
+                                            endAdornment:
+                                                <InputAdornment position="end">
+                                                    <i class={icon}
+                                                        onClick={() => {handleIcon() }}
+                                                    ></i>
+                                                </InputAdornment>
+
+                                        }}
                                     />
 
                                     <TextField required size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}

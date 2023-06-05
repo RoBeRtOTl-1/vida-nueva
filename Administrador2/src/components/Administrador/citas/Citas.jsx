@@ -59,7 +59,7 @@ export default function Citas() {
                         <h3>Gestión de citas</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar obtenerDatos={obtenerDatos} />
+                        {/* <Agregar obtenerDatos={obtenerDatos} /> */}
                     </div>
                 </div>
 

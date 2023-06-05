@@ -14,9 +14,11 @@ export default function Pacientes() {
     const [usuarios, setUsuarios] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { currenUser } = useContext(DataContext);
+    const [curps, setCurps] = useState(new Map())
 
     async function obtenerDatos() {
         setUsuarios([]);
+        setCurps(new Map())
 
         const datosBD = await get_Pacientes_BD();
         setUsuarios(datosBD);

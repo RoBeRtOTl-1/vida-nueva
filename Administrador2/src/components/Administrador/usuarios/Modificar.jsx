@@ -7,7 +7,8 @@ import {
     DialogActions,
     MenuItem,
     Box,
-    Divider
+    Divider,
+    InputAdornment
 } from '@mui/material'
 
 
@@ -109,6 +110,19 @@ export default function Modificar({ dato, obtenerDatos }) {
         obtenerDatos()
     }
 
+
+    const handleIcon = () => {
+        if (icon == "bi bi-eye-slash"){
+            setIcon("bi bi-eye")
+            setKindInput("text")
+        }else{
+            setIcon("bi bi-eye-slash")
+            setKindInput("password")
+        }
+    }
+
+    const [kindInput, setKindInput] = useState("password")
+    const [icon, setIcon] = useState('bi bi-eye-slash')
 
     return (
         <div>
@@ -335,12 +349,21 @@ export default function Modificar({ dato, obtenerDatos }) {
                                     />
                                     <TextField
                                         required
-                                        type='password'
+                                        type={kindInput}
                                         label="contraseña"
                                         size="small"
                                         name="CLAVE"
                                         value={datosPer.CLAVE}
                                         onChange={(e) => handleDatosPersonales(e)}
+                                        InputProps={{
+                                            endAdornment:
+                                                <InputAdornment position="end">
+                                                    <i class={icon}
+                                                        onClick={() => {handleIcon() }}
+                                                    ></i>
+                                                </InputAdornment>
+
+                                        }}
                                     />
 
                                     <TextField required size='small' label="Tipo de usuario" name="ID_TDU" select value={datosPer.ID_TDU} style={{ minWidth: '250px' }}

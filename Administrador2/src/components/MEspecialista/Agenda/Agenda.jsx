@@ -1,16 +1,18 @@
 import {
+    Button,
     Dialog,
-    DialogTitle,
+    DialogActions,
     DialogContent,
     DialogContentText,
-    DialogActions,
-    MenuItem,
-    InputAdornment
-} from '@mui/material'
-import { Stack, TextField } from '@mui/material'
+    DialogTitle,
+    InputAdornment,
+    TextField,
+    Stack,
+    Box
+} from "@mui/material";
+
 import { insertarConsulta } from '../../firebase/Consultas/CTAS_CRUD.js';
 
-import { Button } from "@mui/material";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { _, Grid } from 'gridjs-react';
 
@@ -21,11 +23,13 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
-import { get_Citas_Filtradas_BD } from "../../firebase/Citas/CIT_CRUD";
+import { actualizarCita, get_Citas_Filtradas_BD } from "../../firebase/Citas/CIT_CRUD";
 import { DataContext } from "../../../context/UserContext";
 import { date_to_ts, formatearFechaHora, getCurrentDate, ts_to_date } from '../../firebase/Fechas/Fechas';
 import { get_Pacientes_BD } from '../../firebase/Pacientes/PAC_CRUD.js';
 import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD.js';
+import { Toaster, toast } from "react-hot-toast"
+import { PDFDownloadLink } from "@react-pdf/renderer";
 
 
 export default function Agenda() {
@@ -35,6 +39,8 @@ export default function Agenda() {
     const [currentCitas, setCurrentCitas] = useState([])
     const [open, setOpen] = useState(false)
     const [open2, setOpen2] = useState(false)
+    const [openCancel, setOpenCancel] = useState(false)
+    const [select, setSelect] = useState()
 
     const [pacientes, setPacientes] = useState(new Map())
     const [dataPac, setDataPac] = useState(null)
@@ -57,7 +63,7 @@ export default function Agenda() {
 
     }, []);
 
-    const [datosPer, setDatosPer] = useState({
+    const initialDatosPer = {
         ID_PACIENTE: '',
         ID_USUARIO: currenUser.ID_USUARIO,
         PESO: '',
@@ -69,7 +75,9 @@ export default function Agenda() {
         SINTOMAS: '',
         DIAGNOSTICO: '',
         MEDICAMENTOS: ''
-    })
+    }
+
+    const [datosPer, setDatosPer] = useState(initialDatosPer)
 
     const initialDatosCita = {
         ID_PACIENTES: '',
@@ -82,9 +90,14 @@ export default function Agenda() {
 
     const handleDate = (date) => {
         const id = date.event.extendedProps.data.ID_PACIENTES
+        setSelect(date.event)
         setDataPac(pacientes.get(id))
+        datosPer.ID_PACIENTE = id
         setOpen2(true)
+    }
 
+    function handleDatosPersonales(event) {
+        setDatosPer({ ...datosPer, [event.target.name]: event.target.value })
     }
 
     const sexos = [
@@ -104,12 +117,51 @@ export default function Agenda() {
         ) {
             edad--
         }
-
-        console.log(edad)
-        return ""+edad
+        return "" + edad
 
     }
 
+    const saveConsulta = async (evt) => {
+        evt.preventDefault()
+
+        await insertarConsulta(datosPer)
+        await actualizarCita(select.id, '3') //Cambiamos el estado de la cita a atendido
+        setOpen(false)
+        obtenerDatos()
+        resetForm()
+        toast.success('Cita registrada')
+
+    }
+
+    const resetForm = () => {
+        setDatosPer(initialDatosPer)
+        setSelect(null)
+    }
+
+    const cancelarCita = async () => {
+
+        await actualizarCita(select.id, '5')
+        setOpenCancel(false)
+        setOpen2(false)
+        obtenerDatos()
+        resetForm()
+        toast.success('Cita cancelada')
+    }
+
+    const handleDatos = (e) => {
+        const { name, value } = e.target;
+        let newDatosPer = { ...datosPer, [name]: value };
+
+        if (name === 'PESO' || name === 'ESTATURA') {
+            const peso = parseFloat(newDatosPer.PESO);
+            const estatura = parseFloat(newDatosPer.ESTATURA);
+            const imc = peso && estatura ? (peso / Math.pow(estatura / 100, 2)).toFixed(2) : '';
+            newDatosPer = { ...newDatosPer, IMC: imc };
+        }
+
+        setDatosPer(newDatosPer);
+    };
+    
     return (
 
         <div className="rounded-4 pt-3 mt-4 border-gray shadow-custom" style={{ width: "111%", height: "630px" }} >
@@ -319,16 +371,26 @@ export default function Agenda() {
                             variant='text'
                             color='error'
                             onClick={async () => {
-                                setOpen2(false)
-                            }} >Cancelar</Button>
+                                setOpenCancel(true)
+                            }} >
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            variant='text'
+                            color='error'
+                            onClick={async () => {
+                                //setOpen2(false)
+                                const propsString = JSON.stringify({ ID_PACIENTE: select.extendedProps.data.ID_PACIENTES })
+                                window.open(`http://localhost:5173/Expediente?props=${encodeURIComponent(propsString)}`)
+                            }} >Ver expediente</Button>
+
 
                         <Button
                             className='bg-success text-white'
                             onClick={async () => {
                                 setOpen2(false)
                                 setOpen(true)
-                                await guardarConsultaMedica()
-                                obtenerDatos()
                             }} >Atender</Button>
 
                     </DialogActions>
@@ -345,91 +407,184 @@ export default function Agenda() {
                         },
                     }}>
 
-                    <DialogTitle id='dialog-title'>
-                        <span style={{ color: "black", fontSize: "23px" }}>Registar consulta medica</span>
-                        <Button onClick={() => {
-                            setOpen(false)
+                    <Box
+                        component='form'
+                        onSubmit={saveConsulta}
+                    >
 
-                        }}>X</Button>
-                        <hr />
-                    </DialogTitle>
+                        <DialogTitle id='dialog-title'>
+                            <span style={{ color: "black", fontSize: "23px" }}>Registar consulta medica</span>
+                            <Button onClick={() => {
+                                setOpen(false)
+                                reiniciarFormulario()
+                            }}>X</Button>
+                            <hr />
+                        </DialogTitle>
 
+                        <DialogContent>
+
+                            <DialogContentText className='mt-2' id='dialog-description'>
+                                <Stack spacing={3}>
+                                    <Stack direction="row" spacing={2}>
+                                        <TextField
+                                            type="number"
+                                            label="Peso"
+                                            size="small"
+                                            name="PESO"
+                                            required
+                                            value={datosPer.PESO}
+
+                                            onChange={(e) => {
+
+                                                if (datosPer.PESO.length < 4 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                    handleDatos(e)
+                                                }
+                                            }}
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">kg</InputAdornment>,
+                                            }} />
+
+                                        <TextField
+                                            label="Estatura"
+                                            name="ESTATURA"
+                                            size="small"
+                                            value={datosPer.ESTATURA}
+                                            onChange={(e) => {
+                                                if (datosPer.ESTATURA.length < 3 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                    handleDatos(e)
+                                                }
+                                            }}
+                                            required
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">cm</InputAdornment>,
+                                            }} />
+
+
+                                        <TextField
+                                            label="IMC"
+                                            name="IMC"
+                                            size="small"
+                                            required
+                                            value={datosPer.IMC}
+                                        />
+
+                                        <TextField
+                                            label="Presion siast"
+                                            name="PRESION_SIAST"
+                                            size="small"
+                                            required
+                                            type="number"
+                                            value={datosPer.PRESION_SIAST}
+                                            onChange={(e) => {
+                                                if (datosPer.PRESION_SIAST.length < 5 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                    handleDatosPersonales(e)
+                                                }
+
+                                            }} />
+
+                                        <TextField
+                                            label="Presion diast"
+                                            name="PRESION_DIAST"
+                                            size="small"
+                                            type="number"
+                                            required
+                                            value={datosPer.PRESION_DIAST}
+                                            onChange={(e) => {
+                                                if (datosPer.PRESION_DIAST.length < 5 | e.nativeEvent.inputType == "deleteContentBackward") {
+                                                    handleDatosPersonales(e)
+                                                }
+
+                                            }} />
+                                    </Stack>
+
+                                    <Stack spacing={2}>
+                                        <TextField
+                                            label="Sintomas"
+                                            name='SINTOMAS'
+                                            size="small"
+                                            value={datosPer.SINTOMAS}
+                                            required
+                                            multiline
+                                            maxRows={4}
+                                            onChange={(e) => handleDatosPersonales(e)} />
+                                    </Stack>
+
+                                    <Stack spacing={2}>
+                                        <TextField
+                                            label="Diagnostico"
+                                            name='DIAGNOSTICO'
+                                            size="small"
+                                            value={datosPer.DIAGNOSTICO}
+                                            required
+                                            multiline
+                                            maxRows={4}
+                                            onChange={(e) => handleDatosPersonales(e)} />
+                                    </Stack>
+
+                                    <Stack spacing={2}>
+                                        <TextField
+                                            label="Medicamentos"
+                                            name='MEDICAMENTOS'
+                                            size="small"
+                                            value={datosPer.MEDICAMENTOS}
+                                            required
+                                            multiline
+                                            maxRows={4}
+                                            onChange={(e) => handleDatosPersonales(e)} />
+                                    </Stack>
+
+
+                                </Stack>
+                            </DialogContentText>
+                        </DialogContent>
+
+                        <DialogActions className='align-middle'>
+                            <Button className='bg-success text-white'
+                                type="sumbit" >Guardar</Button>
+
+                        </DialogActions>
+                    </Box>
+                </Dialog>
+
+                <Dialog
+                    open={openCancel}
+                    onClose={() => setOpenCancel(false)}
+                    aria-labelledby='dialog-title'
+                    aria-describedby='dialog-description'
+                    PaperProps={{
+                        style: {
+                            maxWidth: '1000px',
+                        },
+                    }}>
+                    <DialogTitle>Confirmar</DialogTitle>
                     <DialogContent>
 
-                        <DialogContentText className='mt-2' id='dialog-description'>
-                            <Stack spacing={3}>
-                                <Stack direction="row" spacing={2}>
-                                    <TextField type="number" label="Peso" size="small" name="PESO"
-                                        value={datosPer.PESO}
-                                        onChange={(e) => handleDatosPersonales(e)}
-                                        InputProps={{
-                                            endAdornment: <InputAdornment position="end">kg</InputAdornment>,
-                                        }} />
 
-                                    <TextField label="Estatura" name="ESTATURA" size="small"
-                                        value={datosPer.ESTATURA}
-                                        onChange={(e) => handleDatosPersonales(e)}
-                                        InputProps={{
-                                            endAdornment: <InputAdornment position="end">cm</InputAdornment>,
-                                        }} />
+                        <div>
+                            ¿Esta seguro que desea cancelar la cita?
+                        </div>
+
+                        <div className="justify-content-between">
+                            <Button onClick={() => {
+                                setOpenCancel(false)
+                            }} >Cancelar</Button>
 
 
-                                    <TextField label="IMC" name="IMC" size="small"
-                                        value={datosPer.IMC}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-
-                                    <TextField label="Presion siast" name="PRESION_SIAST" size="small"
-                                        value={datosPer.PRESION_SIAST}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-
-                                    <TextField label="Presion diast" name="PRESION_DIAST" size="small"
-                                        value={datosPer.PRESION_DIAST}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Sintomas"
-                                        name='SINTOMAS'
-                                        size="small"
-                                        value={datosPer.SINTOMAS}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Diagnostico"
-                                        name='DIAGNOSTICO'
-                                        size="small"
-                                        value={datosPer.DIAGNOSTICO}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
-
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Medicamentos"
-                                        name='MEDICAMENTOS'
-                                        size="small"
-                                        value={datosPer.MEDICAMENTOS}
-                                        onChange={(e) => handleDatosPersonales(e)} />
-                                </Stack>
+                            <Button onClick={async () => {
+                                cancelarCita()
+                            }}>Confirmar</Button>
+                        </div>
 
 
-                            </Stack>
-                        </DialogContentText>
-                    </DialogContent>
-
-                    <DialogActions className='align-middle'>
-                        <Button className='bg-success text-white' onClick={async () => {
-                            setOpen(false)
-                            await guardarConsultaMedica()
-                            obtenerDatos()
-                        }} >Guardar</Button>
-
-                    </DialogActions>
+                    </DialogContent >
                 </Dialog>
             </div>
-        </div>
+
+            <Toaster
+                position="top-right"
+                reverseOrder={true}
+            />
+        </div >
 
     );
 }

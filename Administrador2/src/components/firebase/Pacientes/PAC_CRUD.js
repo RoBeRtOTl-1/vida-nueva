@@ -54,14 +54,21 @@ export async function get_Pacientes_Filtrado_BD(curp) {
     const domi = await DatoBD_Dom_Filtrado(datos[0].ID_DOMICILIO);
     datos.push(domi[0])
     return datos;
-    // const querySnapshot = await getDocs(collection(db, "PACIENTES"));
-    // const datos = await Promise.all(querySnapshot.docs.map(async (doc) => {
-    //     if(doc.data().CURP = curp){
-    //         let list_Data = doc.data();
-    //         list_Data['ID'] = doc.id;
-    //         const domi = await DatoBD_Dom_Filtrado(doc.data().ID_DOMICILIO);
-    //         Object.assign(list_Data, ...domi);
-    //         return list_Data;
-    //     }
-    // }));
+}
+
+
+export async function get_Unique_Pacientes_BD(ID_PACIENTE) {
+    
+    const querySnapshot = await getDocs(collection(db, "PACIENTES"));
+    const datos = {};
+    querySnapshot.forEach(async (doc) => {
+        
+        if (doc.id == ID_PACIENTE) {
+            let list_Data = doc.data()
+            list_Data['ID'] = doc.id
+            Object.assign(datos, list_Data);
+        }
+    });
+    
+    return datos;
 }

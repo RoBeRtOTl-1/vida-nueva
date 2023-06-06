@@ -20,6 +20,7 @@ import Especialidad from "./components/Recepcionista/Especialidad/Especialidades
 
 import { DataProvider } from "./context/UserContext";
 import { CountProvider } from "./context/CountContext";
+import Expediente from "./components/View-pdf/viewPDF";
 
 export default function App() {
     return (
@@ -38,6 +39,7 @@ export default function App() {
                     <Route path="/Recepcionista" element={<Recepcionista />} />
                     <Route path="/Recepcionista/Servicios" element={<Servicios />} />
                     <Route path="/Recepcionista/Especialidad" element={<Especialidad />} />
+                    <Route path="/Expediente" element={<Expediente />} />
                     <Route path="*" element={<h1>404 Not Found</h1>} />
                 </Routes>
             </CountProvider>

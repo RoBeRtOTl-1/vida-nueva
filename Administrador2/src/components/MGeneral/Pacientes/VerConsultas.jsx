@@ -32,7 +32,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
         setData([])
         const registro = await get_Expendientes_Paciente(ID_PACIENTE)
         setData(registro)
-        
+
         const esp = await DatoDB_ESP();
         const mapa = new Map(esp.map(dato => [dato.ID, dato.ESPECIALIDAD]));
         const usu = await DatoBD_USU();
@@ -87,14 +87,17 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
 
 
                 <DialogContent>
-                    <PDFDownloadLink document={<VisualizarPDF DATOS_PACIENTE={DATOS_PACIENTE} MEDICOS={usuarios} DATA={data} />} fileName='JoseJose' >
-                        <Button
-                            variant="text"
-                            color='error'
-                            style={{ textTransform: 'capitalize' }}>
-                            Generar expediente<span>&nbsp;PDF</span>&nbsp;<i className="bi bi-file-pdf"></i>
+                    <Button
+                        variant='text'
+                        color='error'
+                        onClick={async () => {
+                            //setOpen2(false)
+                            const propsString = JSON.stringify({ ID_PACIENTE: ID_PACIENTE })
+                            window.open(`http://localhost:5173/Expediente?props=${encodeURIComponent(propsString)}`)
+                        }} >
+                             Generar expediente<span>&nbsp;PDF</span>&nbsp;<i className="bi bi-file-pdf"></i>
                         </Button>
-                    </PDFDownloadLink>
+                    
 
                     <DialogContentText className='mt-2' id='dialog-description'>
 
@@ -115,7 +118,7 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                                     name: 'Medico',
                                     width: "20%"
                                 },
-                                
+
                                 {
                                     name: 'Sintomas',
                                     width: "20%"
@@ -124,12 +127,12 @@ export default function VerConsultas({ ID_PACIENTE, DATOS_PACIENTE }) {
                                     name: 'Diagnostico',
                                     width: "20%"
                                 },
-                                
+
                                 {
                                     name: 'Medicamentos',
                                     width: "20%"
                                 },
-                                
+
                                 {
                                     name: 'Fecha hora',
                                     width: "10%"

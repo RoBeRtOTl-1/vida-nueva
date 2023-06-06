@@ -39,6 +39,20 @@ export async function get_Citas_BD() {
     return datos;
 }
 
+export async function get_Todas_Citas_BD() {
+    const datos = [];
+    const citasRef = collection(db, "CITAS")
+    const q = query(citasRef, where('ID_ESTADOS', 'in', [5, 3]))
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+        let list_Data = doc.data()
+        list_Data['ID'] = doc.id
+        datos.push(list_Data);
+    });
+    return datos;
+}
+
 export async function get_Cita_Especifica_BD(id) {
     const datos = {};
     const citasRef = collection(db, "CITAS")

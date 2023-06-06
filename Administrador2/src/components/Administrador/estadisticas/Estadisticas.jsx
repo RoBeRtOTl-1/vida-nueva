@@ -5,8 +5,9 @@ import Citas_BarChart from "./Citas/graficaBarras";
 import Citas_SolidGauge from "./Citas/SolidGauge";
 
 import { BD_Turnos_Estadisticas } from "../../firebase/Turnos/TURN_CRUD";
-
 import { DateRangePicker } from 'rsuite';
+
+import { EstadisticasCitas } from "../../firebase/Estadisticas/EST_CRUD";
 
 export default function Estadisticas() {
     const [isLoading, setIsLoading] = useState(true);
@@ -16,60 +17,18 @@ export default function Estadisticas() {
     const [dataTurnos, setDataTurnos] = useState([])
     const [dataCitas, setDataCitas] = useState([])
 
+    EstadisticasCitas()
+
     async function obtenerTunosCitas() {
         setIsLoading(true)
         setDataTurnos(await BD_Turnos_Estadisticas(null, null));
+        setDataCitas(await EstadisticasCitas());
         setIsLoading(false)
     }
     useEffect(() => {
         obtenerTunosCitas()
     }, [])
 
-    const dataGB = [
-        {
-            NOMBRE: "CM Atendidos",
-            TOTAL: 3025,
-
-        },
-        {
-            NOMBRE: "CM Cancelados",
-            TOTAL: 2800
-        }, {
-            NOMBRE: "TP Atendidos",
-            TOTAL: 3025,
-
-        },
-        {
-            NOMBRE: "TP Cancelados",
-            TOTAL: 2800
-        }, {
-            NOMBRE: "AI Atendidos",
-            TOTAL: 3025,
-
-        },
-        {
-            NOMBRE: "AI Cancelados",
-            TOTAL: 2800
-        }, {
-            NOMBRE: "CE Atendidos",
-            TOTAL: 3025,
-
-        },
-        {
-            NOMBRE: "CE Cancelado",
-            TOTAL: 2800
-        }
-    ];
-
-    const data = [
-        { category: "Lithuania", value: 501.9 },
-        { category: "Czechia", value: 301.9 },
-        { category: "Ireland", value: 201.1 },
-        { category: "Germany", value: 165.8 },
-        { category: "Australia", value: 139.9 },
-        { category: "Austria", value: 128.3 },
-        { category: "UK", value: 99 }
-    ];
 
 
     const hanndleFecha = async (evt) => {
@@ -158,10 +117,10 @@ export default function Estadisticas() {
                             ) : (
                                 <div className="row">
                                     <div className="col-8">
-                                        <Citas_BarChart data={dataGB} />
+                                        <Citas_BarChart data={dataCitas} />
                                     </div>
                                     <div className="col-4">
-                                        <Citas_SolidGauge data={data} />
+                                        <Citas_SolidGauge data={dataCitas} />
                                     </div>
                                 </div>
                             )

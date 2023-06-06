@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on("PublicidadActiva", async (data) => {
-        if (!( cola_publicidad[0])){
+        if (!(cola_publicidad[0])) {
             cola_publicidad = data
         }
         await io.emit('publicidad', await cola_publicidad)
@@ -78,11 +78,14 @@ io.on('connection', (socket) => {
     })
 
 
-    socket.on("ActualizarPublicidad", async (data) =>{
-        
+    socket.on("ActualizarPublicidad", async (data) => {
+
         cola_publicidad = data;
+        console.log('---------------------------------------------------------------------------------------')
         console.log(cola_publicidad)
-        io.emit('publicidad', await cola_publicidad)
+        await io.emit('publicidad', await cola_publicidad)
+        await io.emit('publicidad', await cola_publicidad)
+        await io.emit('publicidad', await cola_publicidad)
     })
 
 })

@@ -1,7 +1,9 @@
+import { get_Todas_Citas_BD } from "../Citas/CIT_CRUD";
+import { DatoDeLaBDActivos } from "../Especialides/ESP_CRUD";
 import { getCurrentDate, ts_to_date } from "../Fechas/Fechas";
 import { db } from "../firebase"
 import { collection, addDoc, getDocs, setDoc, doc, where, query, updateDoc, orderBy } from "firebase/firestore";
-
+import { DatoDeLaBD as get_All_Usuarios } from "../../firebase/Ususarios/USU_CRUD";
 
 /**
  * Inserta un nuevo turno en la coleccion TURNOS
@@ -32,41 +34,6 @@ export async function datosNuevoTurno(id) {
     return datos;
 }
 
-
-
-// export async function DatosBD_Turnos() {
-//     const turnosRef = collection(db, "TURNOS");
-//     const q = query(turnosRef, 
-//         orderBy("FECHAHORA"),
-//         where ('ID_ESTADOS', 'in', ['4','6']));
-//     const querySnapshot = await getDocs(q);
-//     const datos = [];
-
-//     querySnapshot.forEach((doc) => {
-//         let list_Data = doc.data()
-//         list_Data['ID'] = doc.id
-//         datos.push(list_Data);
-//     });
-//     console.log(datos)
-//     return datos;
-// }
-
-
-// export async function DatosBD_Turnos() {
-//     const turnosRef = collection(db, "TURNOS");
-//     const q = query(turnosRef, 
-//         where ('ID_ESTADOS', 'in', [4,6]),
-//         orderBy("FECHAHORA"));
-//     const querySnapshot = await getDocs(q);
-//     const datos = [];
-
-//     querySnapshot.forEach((doc) => {
-//         let list_Data = doc.data()
-//         list_Data['ID'] = doc.id
-//         datos.push(list_Data);
-//     });
-//     return datos;
-// }
 
 export async function BD_Turnos_Actuales() {
     const datos = [];
@@ -122,7 +89,7 @@ export async function DatosBD_Turnos() {
     const currentDate = {
         year: fecha.getFullYear(),
         month: fecha.getMonth(),
-        day: fecha.getDate() 
+        day: fecha.getDate()
     }
 
     /* Apuntamos a la coleccion */
@@ -156,3 +123,36 @@ export async function DatosBD_Turnos() {
 }
 
 
+//----------------------------------------------------------------------------------------------------------------------------------
+//                                  Aqui empieza las estadisticas de citas
+//----------------------------------------------------------------------------------------------------------------------------------
+
+export async function EstadisticasCitas() {
+    const data = []
+    const especialidades = await DatoDeLaBDActivos()
+    especialidades.map((espe) => {
+        data.push({
+            NOMBRE: `${espe.ESPECIALIDAD} Atendidos`,
+            TOTAL: 5
+        })
+        data.push({
+            NOMBRE: `${espe.ESPECIALIDAD} Cancelados`,
+            TOTAL: 5
+        })
+    })
+
+    const allCitas = await get_Todas_Citas_BD()
+
+    allCitas.map( (cita) =>{
+
+    })
+
+    const allMedicos = await get_All_Usuarios()
+    console.log(allCitas)
+    console.log(allMedicos)
+    console.log(especialidades)
+
+    console.log(data)
+    return data;
+
+}

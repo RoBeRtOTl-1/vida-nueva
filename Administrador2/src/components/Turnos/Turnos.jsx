@@ -33,9 +33,15 @@ export default function Turnos() {
          
         socket.on('publicidad', async (publicidadActual) => {
             setPublicidad(null)
-            setPublicidad(await publicidadActual)
+            if (await publicidadActual){
+                setPublicidad(publicidadActual)
+                handlePublicidad()
+            }{
+                null
+            }
+            //setPublicidad(await publicidadActual ? publicidadActual handlePublicidad() : null)
             console.log(publicidadActual)
-            handlePublicidad()
+           
             setIsLoading(false)
         })
 

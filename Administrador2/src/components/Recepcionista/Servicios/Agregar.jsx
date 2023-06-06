@@ -9,7 +9,7 @@ import {
     Box
 } from '@mui/material'
 import { useState, useEffect, useContext } from 'react'
-import { getCurrentDate } from '../../firebase/Fechas/Fechas'
+import { date_to_ts, formatearFechaHora, getCurrentDate } from '../../firebase/Fechas/Fechas'
 import { actualizarContadores, datosNuevoTurno, insertarTurno } from '../../firebase/Turnos/TURN_CRUD';
 import { io } from 'socket.io-client';
 import { CountContext } from '../../../context/CountContext';
@@ -152,7 +152,10 @@ export default function Agregar({ servicio, id }) {
                                     <h1>{servicio}</h1>
                                 </div>
                                 <div className="col-12 ">
-                                    <h5>Fecha: {getCurrentDate}</h5>
+                                    <h5>Fecha:</h5>
+                                </div>
+                                <div className="col-12 ">
+                                    <h5> {formatearFechaHora( date_to_ts(new Date())) }</h5>
                                 </div>
                             </div>
 

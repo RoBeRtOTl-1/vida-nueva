@@ -104,7 +104,7 @@ export default function SigTurno() {
                             >
                                 Cancelado
                             </Button>
-                            <Button disabled={btn4} >Volver a llamar</Button>
+                            
                         </div>
                     </div>
 

@@ -40,6 +40,7 @@ export default function Agregar({ obtenerDatos }) {
     const handleChange = (newFile) => {
         setFile(newFile)
         setPreviewUrl(URL.createObjectURL(newFile))
+
     }
 
     const handleDataP = (event) => {
@@ -58,29 +59,29 @@ export default function Agregar({ obtenerDatos }) {
     const hanndleInsert = async (evt) => {
         evt.preventDefault(); //Evitamos que se recargue la pagina
 
-        if(datosPB)
-        //Verificamos que se haya seleccionado una fecha
-        if (datosPB.FECHA_TERMINACION) {
-            if (file) {
-                //Primero insertamos la imagen y guardamos el URL en los datos
-                // de la publicidad
-                await saveImg()
-                //Depues ya guardamos la publicidad
-                await insertarPublicidad(datosPB)
-                setDatosPB(initialDatosPB)
-                setFile('')
-                setPreviewUrl(null)
+        if (datosPB)
+            //Verificamos que se haya seleccionado una fecha
+            if (datosPB.FECHA_TERMINACION) {
+                if (file) {
+                    //Primero insertamos la imagen y guardamos el URL en los datos
+                    // de la publicidad
+                    await saveImg()
+                    //Depues ya guardamos la publicidad
+                    await insertarPublicidad(datosPB)
+                    setDatosPB(initialDatosPB)
+                    setFile('')
+                    setPreviewUrl(null)
 
-                setOpen(false)
-                obtenerDatos()
-                toast.success('Publicidad guardada')
+                    setOpen(false)
+                    obtenerDatos()
+                    toast.success('Publicidad guardada')
 
+                } else {
+                    toast.error('FALTA IMAGEN')
+                }
             } else {
-                toast.error('FALTA IMAGEN')
+                toast.error('FALTA FECHA DE TERMINACION')
             }
-        } else {
-            toast.error('FALTA FECHA DE TERMINACION')
-        }
 
 
 
@@ -186,14 +187,22 @@ export default function Agregar({ obtenerDatos }) {
 
                                 </div>
                                 <div className='col-6'>
-                                    <Image
-                                        src={previewUrl}
-                                        width={500}
-                                        height={500}
-                                        duration={0}
-                                        required
-                                        fit={"contain"}
-                                    />
+                                    {
+                                        file ? (
+                                            <Image
+                                                src={previewUrl}
+                                                width={500}
+                                                height={500}
+                                                duration={0}
+                                                required
+                                                fit={"contain"}
+                                            />
+
+                                        ) : (
+
+                                            null
+                                        )
+                                    }
                                     <MuiFileInput value={file} onChange={handleChange} />
                                 </div>
 

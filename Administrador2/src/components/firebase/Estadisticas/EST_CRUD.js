@@ -128,30 +128,85 @@ export async function DatosBD_Turnos() {
 //----------------------------------------------------------------------------------------------------------------------------------
 
 export async function EstadisticasCitas() {
-    const data = []
-    const especialidades = await DatoDeLaBDActivos()
-    especialidades.map((espe) => {
-        data.push({
-            NOMBRE: `${espe.ESPECIALIDAD} Atendidos`,
-            TOTAL: 5
-        })
-        data.push({
-            NOMBRE: `${espe.ESPECIALIDAD} Cancelados`,
-            TOTAL: 5
-        })
-    })
 
+    const especialidades = await DatoDeLaBDActivos()
+    const allMedicos = await get_All_Usuarios()
     const allCitas = await get_Todas_Citas_BD()
 
-    allCitas.map( (cita) =>{
 
+    const new_Esp = new Map(especialidades.map((espe) => [espe.ID, espe.ESPECIALIDAD]))
+
+    const allMedicos_2 = allMedicos.map((medico) => {
+        const { ID_ESTADOS, ...medicoWithoutIDEstados } = medico;
+        return medicoWithoutIDEstados;
+    });
+
+
+    const map_Medicos = new Map(
+        allMedicos_2.map((medico) => [
+            medico.ID,
+
+            { ...medico, ID_ESPECIALIDAD: new_Esp.get(medico.ID_ESPECIALIDAD) },
+        ])
+    );
+
+
+    const map_Citas = new Map(
+        allCitas.map((cita) => [
+            cita.ID,
+            Object.assign(cita, map_Medicos.get(cita.ID_USUARIO))
+            //{... cita, ID_USUARIO : map_Medicos.get( cita.ID_USUARIO)}
+        ])
+    );
+
+    const map_Citas_2 = allCitas.map((medico) => {
+        if (medico.ID_ESPECIALIDAD == 3) {
+            return { ...medico, ID_ESPECIALIDAD: medico.ID_ESPECIALIDAD + " Atendidos" };
+        } else if (medico.ID_ESTADOS == 5) {
+            return { ...medico, ID_ESPECIALIDAD: medico.ID_ESPECIALIDAD + " Cancelados" };
+        } else {
+            return medico;
+        }
+    });
+
+
+    let i = 0
+    const index_Especialidades = new Map()
+
+
+
+
+    // console.log(map_Citas_2)
+    // console.log(index_Especialidades)
+
+    const especialidadesTotales = new Map();
+
+    map_Citas.forEach(medico => {
+        const especialidad = medico.ID_ESPECIALIDAD;
+        const estado = medico.ID_ESTADOS === 5 ? "Cancelados" : "Atendidos";
+        const especialidadKey = `${especialidad} ${estado}`;
+
+        if (especialidadesTotales.has(especialidadKey)) {
+            const total = especialidadesTotales.get(especialidadKey);
+            especialidadesTotales.set(especialidadKey, total + 1);
+        } else {
+            especialidadesTotales.set(especialidadKey, 1);
+        }
+    });
+
+
+    const data = []
+
+    const key = Array.from(especialidadesTotales.keys())
+    
+    key.map((espe) => {
+        data.push(
+            {
+                NOMBRE: `${espe}`,
+                TOTAL: `${especialidadesTotales.get(espe)}`
+            }
+        )
     })
-
-    const allMedicos = await get_All_Usuarios()
-    console.log(allCitas)
-    console.log(allMedicos)
-    console.log(especialidades)
-
     console.log(data)
     return data;
 

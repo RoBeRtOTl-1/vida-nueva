@@ -15,6 +15,7 @@ export default function Pacientes() {
     const [isLoading, setIsLoading] = useState(true);
     const { currenUser } = useContext(DataContext);
     const [curps, setCurps] = useState(new Map())
+    const [pac, setPac]= useState()
 
     async function obtenerDatos() {
         setUsuarios([]);
@@ -22,6 +23,13 @@ export default function Pacientes() {
 
         const datosBD = await get_Pacientes_BD();
         setUsuarios(datosBD);
+
+        
+        setPac(new Map())
+        setPac(await new Map(datosBD.map(dato => [dato.ID, dato.NOMBRE + " " + dato.AP_PATERNO + " " + dato.AP_MATERNO])))
+
+        const c = await (datosBD.map(pac => pac.CURP))
+        setCurps(c)
 
 
         setIsLoading(false);
@@ -41,7 +49,7 @@ export default function Pacientes() {
                         <h3>Pacientes</h3>
                     </div>
                     <div className="col-6 text-end">
-                        <Agregar obtenerDatos={obtenerDatos} />
+                        <Agregar obtenerDatos={obtenerDatos} curps={curps} />
                     </div>
                 </div>
 

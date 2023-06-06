@@ -10,6 +10,9 @@ const Expediente = () => {
     const [dataPac, setDataPac] = useState(null);
     const [expediente, setExpediente] = useState(null);
     const [isLoading, setIsLoading] = useState(true)
+    const [tiposSangre, setTiposSangre] = useState(new Map(TIPOS_DE_SANGRE().map(
+        (tip) => [tip.ID, tip.TIPO_SANGRE]))
+    );
 
     const obtenerDatos = async () => {
         const queryParams = new URLSearchParams(window.location.search);
@@ -121,7 +124,7 @@ const Expediente = () => {
                                 {dataPac && <Text style={styles.text} >CURP: {dataPac.CURP}</Text>}
                                 {dataPac && <Text style={styles.text} >Email: {dataPac.EMAIL}          Telefono: {dataPac.TELEFONO}</Text>}
                                 {dataPac && <Text style={styles.text} >Alergias: {dataPac.ALERGIAS}</Text>}
-                                {dataPac && <Text style={styles.text} >Tipo de sangre: AB+</Text>}
+                                {dataPac && <Text style={styles.text} >Tipo de sangre: {tiposSangre.get(dataPac.ID_TIP_SANGRE)}</Text>}
 
                             </Page>
 
@@ -150,9 +153,22 @@ const Expediente = () => {
 
                                         <Text style={styles.text} >Peso: {consulta.PESO} kg Estatura: {consulta.ESTATURA} cm  IMC {consulta.IMC}</Text>
 
+                                        <Svg height="1" width="525">
+                                            <Line x1="0" y1="0" x2="525" y2="0"
+                                                strokeWidth={1}
+                                                stroke="rgb(0,0,0)"
+                                            />
+                                        </Svg>
                                         <Text style={styles.text} > Presion diast: {consulta.PRESION_DIAST} Presion diast: {consulta.PRESION_SIAST}</Text>
 
+                                        <Svg height="1" width="525">
+                                            <Line x1="0" y1="0" x2="525" y2="0"
+                                                strokeWidth={1}
+                                                stroke="rgb(0,0,0)"
+                                            />
+                                        </Svg>
                                         <Text style={styles.text} >Sintomas: {consulta.SINTOMAS}</Text>
+                                        
                                         <Text style={styles.text} >Diagnostico: {consulta.DIAGNOSTICO}</Text>
                                         <Text style={styles.text} >Medicamentos: {consulta.MEDICAMENTOS}</Text>
 

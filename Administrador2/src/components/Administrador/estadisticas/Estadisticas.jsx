@@ -25,6 +25,12 @@ export default function Estadisticas() {
         setDataCitas(await EstadisticasCitas());
         setIsLoading(false)
     }
+
+    async function obtenerCitas() {
+        setIsLoading(true)
+        setDataCitas(await EstadisticasCitas(null, null));
+        setIsLoading(false)
+    }
     useEffect(() => {
         obtenerTunosCitas()
     }, [])
@@ -45,10 +51,24 @@ export default function Estadisticas() {
         console.log(dataTurnos)
     }
 
+
+    const hanndleFecha2 = async (evt) => {
+        if (evt) {
+            setIsLoading(true)
+            setDataTurnos(await BD_Turnos_Estadisticas(evt[0], evt[1]));
+            setIsLoading(false)
+        } else {
+            setIsLoading(true)
+            setDataTurnos(await BD_Turnos_Estadisticas(null, null));
+            setIsLoading(false)
+        }
+        console.log('Hola')
+        console.log(dataTurnos)
+    }
     return (
         <div
             className="rounded-4 pt-3 mt-4 border-gray shadow-custom"
-            style={{ width: "111%", height: "1200px"}}>
+            style={{ width: "111%", height: "1200px" }}>
 
 
             <div className="container-fluid mt-4">
@@ -64,14 +84,14 @@ export default function Estadisticas() {
                             defaultCalendarValue={dateRangeT}
                             onChange={(evt) => {
                                 hanndleFecha(evt)
-                            }} 
+                            }}
 
                             //Quita los busquedas por defecto, tales como "Today", "Yesterdar", "Last 7 days"
                             ranges={[]}
 
                             placeholder={'DD-MM-YYYY HH:MM:SS - DD-MM-YYYY HH:MM:SS'}
-                            
-                            />
+
+                        />
                         <h2 > Estadisticas de turnos</h2>
                     </div>
                     <div className="" style={{ height: "500px" }}>
@@ -101,7 +121,18 @@ export default function Estadisticas() {
                         <DateRangePicker
                             character=" - "
                             format="dd-MM-yyyy HH:mm:ss"
-                            defaultCalendarValue={[new Date('2022-02-01 00:00:00'), new Date('2022-05-01 23:59:59')]}
+                            onClean={() => {
+                                hanndleFecha2(null)
+                            }}
+                            defaultCalendarValue={dateRangeT}
+                            onChange={(evt) => {
+                                hanndleFecha2(evt)
+                            }}
+
+                            //Quita los busquedas por defecto, tales como "Today", "Yesterdar", "Last 7 days"
+                            ranges={[]}
+
+                            placeholder={'DD-MM-YYYY HH:MM:SS - DD-MM-YYYY HH:MM:SS'}
                         />
                         <h2>Estadisticas de citas</h2>
                     </div>
@@ -116,12 +147,12 @@ export default function Estadisticas() {
                                 </div>
                             ) : (
                                 <div className="row">
-                                    <div className="col-8">
+                                    <div className="col-12">
                                         <Citas_BarChart data={dataCitas} />
                                     </div>
-                                    <div className="col-4">
+                                    {/* <div className="col-4">
                                         <Citas_SolidGauge data={dataCitas} />
-                                    </div>
+                                    </div> */}
                                 </div>
                             )
                         }

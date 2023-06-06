@@ -127,7 +127,7 @@ export async function DatosBD_Turnos() {
 //                                  Aqui empieza las estadisticas de citas
 //----------------------------------------------------------------------------------------------------------------------------------
 
-export async function EstadisticasCitas() {
+export async function EstadisticasCitas( ) {
 
     const especialidades = await DatoDeLaBDActivos()
     const allMedicos = await get_All_Usuarios()

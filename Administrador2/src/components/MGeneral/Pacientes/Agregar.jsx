@@ -23,13 +23,14 @@ import { insertarDom } from '../../firebase/Domicilio/Dom_CRUD.js';
 import { date_to_ts } from '../../firebase/Fechas/Fechas.js';
 import { insertarHorario } from '../../firebase/Horarios/HOR_CRUD.js';
 import TIPOS_DE_SANGRE from '../../firebase/TiposSangre/TS_CRUD.js';
-import { insertarPaciente } from '../../firebase/Pacientes/PAC_CRUD.js';
+import { get_Pacientes_BD, insertarPaciente } from '../../firebase/Pacientes/PAC_CRUD.js';
 
 
 
-export default function Agregar({ obtenerDatos }) {
+export default function Agregar({ obtenerDatos, curps }) {
     const [open, setOpen] = useState(false)
     const [tiposSangre, setTiposSangre] = useState(TIPOS_DE_SANGRE());
+
 
     const initialDatosPer = {
         NOMBRE: '',
@@ -94,11 +95,15 @@ export default function Agregar({ obtenerDatos }) {
             if (datosPer.CURP.length < 18) {
                 toast.error("CURP INVALIDA")
             } else {
-
+                console.log(curps)
                 const ID_DOM = await insertarDom(datosDom);
                 datosPer["ID_DOMICILIO"] = ID_DOM;
                 const ID_USU = await insertarPaciente(datosPer)
                 toast.success('Paciente guardado')
+                setOpen(false)
+                obtenerDatos()
+                resetForm()
+
             }
 
         }
@@ -106,13 +111,20 @@ export default function Agregar({ obtenerDatos }) {
 
     }
 
+    const resetForm = () => {
+        setDatosPer(initialDatosPer)
+        setDatosDom(initialDatosDom)
+    }
 
     return (
         <div>
             <Button style={{ backgroundColor: "#0048FF", color: "white" }} onClick={() => { setOpen(true) }}>Agregar</Button>
             <Dialog
                 open={open}
-                onClose={() => setOpen(false)}
+                onClose={() => {
+                    resetForm()
+                    setOpen(false)
+                }}
                 aria-labelledby='dialog-title'
                 aria-describedby='dialog-description'
                 PaperProps={{
@@ -129,7 +141,7 @@ export default function Agregar({ obtenerDatos }) {
                         <span style={{ color: "black", fontSize: "23px" }}>Datos personales</span>
                         <Button onClick={() => {
                             setOpen(false)
-                            reiniciarFormulario()
+                            resetForm()
                         }}>X</Button>
                         <hr />
                     </DialogTitle>
